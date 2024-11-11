@@ -35,6 +35,7 @@ build/
 
 src/main/resources/templates/assets/*
 src/main/resources/templates/index.html
+src/main/resources/templates/*.svg
 release/*.db
 release/*.jar
 release/*.md

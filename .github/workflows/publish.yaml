@@ -31,14 +31,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
-          name: local-development-console-release-${{ github.ref_name }}
-          path: release-${{ github.ref_name }}
+          name: local-development-console-v${{ github.ref_name }}
+          path: release
       - run: sed -i 's,\[link\]([^)]*),[link](${{ steps.artifact-upload-step
           .outputs.artifact-url }}),g' readme.md
       - run: git config --global user.name 'Chengsi Zhang'
       - run: git config --global user.email 'mylifeholdon@gmail.com'
       - run: git add readme.md
-      - run: git checkout .
-      - run: git clean
-      - run: git commit --message 'update download url'
+      - run: git commit --message 'update download url for release v-${{github.ref_name }}'
       - run: git push origin HEAD:master

@@ -31,13 +31,13 @@ service status in real time by configuring log status monitoring.
 
 ## how to use
 
-1. download app from this [link]().
+1. download app from this **[link]()**.
 
 2. double click run.bat (currently only support windows if you need linux or mac
    version, please create issue). You can close this cmd console, the Console
    still running in background.
 
-3. visit **http://localhost:9981/**
+3. visit *http://localhost:9981/*
 
 # Feature
 
