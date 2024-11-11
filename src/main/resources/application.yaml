@@ -1,0 +1,38 @@
+logging:
+  file:
+    name: local-development-console.log
+  level:
+    org:
+      springframework:
+        security: TRACE
+server:
+  port: 9981
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    generate-ddl: true
+  datasource:
+    url: jdbc:h2:file:./h2db
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+
+  web:
+    resources:
+      static-locations: classpath:/templates
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jackson:
+    deserialization:
+      read-date-timestamps-as-nanoseconds: false
+    serialization:
+      write-date-timestamps-as-nanoseconds: false
+      write-dates-as-timestamps: true
+
+
