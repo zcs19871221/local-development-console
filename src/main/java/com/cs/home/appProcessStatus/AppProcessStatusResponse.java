@@ -18,5 +18,7 @@ public class AppProcessStatusResponse {
 
     private Boolean clear;
 
+    private Boolean error;
+
     private String name;
 }

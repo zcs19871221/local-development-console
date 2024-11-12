@@ -48,6 +48,7 @@ public class SystemController {
             HomeApplication.applicationContext.close();
             log.info("system shutdown at {}",
                     ZonedDateTime.now());
+            System.exit(0);
         };
         new Thread(runnable).start();
         return Response.create(messageSource.getMessage(

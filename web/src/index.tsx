@@ -66,7 +66,7 @@ export const App = () => {
               className="ml-auto cursor-pointer"
               onClick={() => {
                 jsonFetcher('/system/shutdown', 'PUT').then((res) => {
-                  message.success(res);
+                  message.success({ duration: 2, content: res });
                 });
               }}
             >

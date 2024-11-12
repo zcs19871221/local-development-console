@@ -1,4 +1,5 @@
 export interface StatusResponse {
+  error?: boolean;
   id: number;
   name: string;
   matchers: string[];

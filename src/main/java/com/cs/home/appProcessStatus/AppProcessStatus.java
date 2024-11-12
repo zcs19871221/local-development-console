@@ -36,4 +36,6 @@ public class AppProcessStatus {
 
     private Boolean clear;
 
+    private Boolean error;
+
 }

@@ -46,6 +46,7 @@ import useDebouncedValue from '../common/useDebouncedValue.tsx';
 import safeParse from '../common/safeParse.ts';
 import { useStatusColumns } from '../logStatus/index.tsx';
 import { StatusResponse, statusApiBase } from '../logStatus/types.ts';
+import escapeRegExp from '../common/escapeRegExpStr.ts';
 
 const operator = (type: 'start' | 'stop' | 'restart', processesId: number) =>
   jsonFetcher(`${processesApiBase}/${processesId}/${type}`, 'PUT').then(() => {
@@ -261,50 +262,78 @@ export default function ProcessesComponent() {
     let id = 1;
     const htmlParts: ReactNode[] = [];
     let index = 0;
+    const logStatus: StatusResponse[] =
+      data?.find((d) => d.id === processesId)?.appProcessStatuses ?? [];
+    if (!log) {
+      return [[], []];
+    }
 
-    log?.replace(
-      /(?:ERROR in ([^(]+)\((\d+),(\d+)\))|(\berror\b)/gi,
-      (_match, locate, row, col, errorText, offset) => {
+    const errorLogStatus = logStatus.filter((l) => l.error)[0];
+    if (errorLogStatus) {
+      const matchedText = `\\b((${errorLogStatus.matchers.map(escapeRegExp).join(')|(')}))\\b`;
+      console.log('regExp str:', matchedText);
+      const errorRegExp = new RegExp(matchedText);
+      console.log('regExp :', errorRegExp);
+      console.log('allLog:', log);
+      log?.replace(errorRegExp, (errorMatched, offset) => {
         htmlParts.push(log.slice(index, offset));
-        index = offset + _match.length;
+        index = offset + errorMatched.length;
         const idKey = `error${id++}`;
         ids.push(idKey);
-        if (errorText) {
-          htmlParts.push(
-            <span id={idKey} className="text-red-500" key={idKey}>
-              {errorText}
-            </span>,
-          );
-          return _match;
-        }
         htmlParts.push(
-          <h3 id={idKey} className="text-red-500">
+          <span id={idKey} style={{ color: errorLogStatus.color }} key={idKey}>
+            {errorMatched}
+          </span>,
+        );
+        return errorMatched;
+      });
+    }
+
+    htmlParts.push(log.slice(index));
+
+    const resultParts: ReactNode[] = [];
+    htmlParts.forEach((elementOrString) => {
+      if (typeof elementOrString !== 'string') {
+        resultParts.push(elementOrString);
+        return;
+      }
+
+      console.log(
+        'pathReg',
+        /((?:(?:[a-z]:)|(?:\/))(?:[\\/]+[^/\\:*?"<>|]+)+[^/\\:*?"<>|]+\.[a-z\d]+)(?::(\d+):(\d+))?/,
+      );
+      let innerIndex = 0;
+      console.log('logText', elementOrString);
+      elementOrString?.replace(
+        /\\b((?:(?:[a-z]:)|(?:\/))(?:[\\/]+[^/\\:*?"<>|]+)+[^/\\:*?"<>|]+\.[a-z\d]+)(?::(\d+):(\d+))?\\b/gi,
+        (path, locate, row, col, innerOffset) => {
+          resultParts.push(elementOrString.slice(innerIndex, innerOffset));
+          innerIndex = innerOffset + path.length;
+
+          resultParts.push(
             <Button
               type="link"
               onClick={() => {
                 jsonFetcher(
                   `/system/run?command=${encodeURIComponent(
-                    `code.cmd ${locate.replace(/\\+/g, '/')}:${row}:${col}`,
+                    `code.cmd ${locate.replace(/\\+/g, '/')}:${row ?? 0}:${col ?? 0}`,
                   )}`,
                   'GET',
                 );
               }}
               target="_blank"
             >
-              {_match}
-            </Button>
-          </h3>,
-        );
-        return _match;
-      },
-    );
+              {path}
+            </Button>,
+          );
+          return path;
+        },
+      );
 
-    if (log) {
-      htmlParts.push(log.slice(index));
-    }
-
-    return [htmlParts, ids];
-  }, [log]);
+      resultParts.push(elementOrString.slice(innerIndex));
+    });
+    return [resultParts, ids];
+  }, [data, log, processesId]);
 
   const errorAnchorIndexRef = useRef(0);
 

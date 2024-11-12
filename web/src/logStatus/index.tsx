@@ -81,6 +81,11 @@ export const useStatusColumns = () => [
             defaultMessage: '不清除日志',
           }),
   },
+  {
+    dataIndex: 'error',
+    title: '是否错误信息匹配',
+    render: (val: boolean) => (val ? '是' : '否'),
+  },
 ];
 type Presets = Required<ColorPickerProps>['presets'][number];
 
@@ -334,6 +339,9 @@ export default function LogStatus() {
           })}
           valuePropName="checked"
         >
+          <Checkbox />
+        </Form.Item>
+        <Form.Item name="error" label="是否是错误匹配" valuePropName="checked">
           <Checkbox />
         </Form.Item>
       </Modal>

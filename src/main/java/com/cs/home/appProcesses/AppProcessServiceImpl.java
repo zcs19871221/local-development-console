@@ -11,7 +11,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,21 +38,6 @@ public class AppProcessServiceImpl implements AppProcessService {
     private final AppProcessStatusMapper appProcessStatusMapper;
 
     private final MessageSource messageSource;
-
-
-    @PostConstruct
-    private void addShutDownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            for (Integer i : idMapProcess.keySet()) {
-                try {
-                    stop(i);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            System.exit(0);
-        }));
-    }
 
     public void start(Integer appProcessId) throws IOException {
 
@@ -165,7 +149,7 @@ public class AppProcessServiceImpl implements AppProcessService {
 
     @Override
     public String logs(Integer appProcessId) throws IOException {
-        return Files.readString(Paths.get(getLogPath(appProcessId)));
+        return Files.readString(Paths.get(getLogPath(appProcessId))).replaceAll("\\\\", "\\\\\\\\");
     }
 
     public synchronized Map<Integer, RunningProcessResponse> runningProcesses() throws IOException {

@@ -18,6 +18,8 @@ public class AppProcessStatusCreated {
 
     private Boolean clear = false;
 
+    private Boolean error = false;
+
     @NotEmpty
     private String name;
 
