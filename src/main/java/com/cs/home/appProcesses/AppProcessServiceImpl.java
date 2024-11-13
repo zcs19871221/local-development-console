@@ -169,7 +169,7 @@ public class AppProcessServiceImpl implements AppProcessService {
                         runningProcess.getAppProcessStatuses()) {
                     for (String matcherStr : status.getMatchers()) {
                         Pattern pattern =
-                                Pattern.compile("\\b" + matcherStr + "\\b",
+                                Pattern.compile("[\\s\\n]" + matcherStr + "[\\s\\n]",
                                         Pattern.CASE_INSENSITIVE);
                         Matcher matcher = pattern.matcher(strLine);
                         if (matcher.find()) {

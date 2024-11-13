@@ -270,19 +270,16 @@ export default function ProcessesComponent() {
 
     const errorLogStatus = logStatus.filter((l) => l.error)[0];
     if (errorLogStatus) {
-      const matchedText = `\\b((${errorLogStatus.matchers.map(escapeRegExp).join(')|(')}))\\b`;
-      console.log('regExp str:', matchedText);
-      const errorRegExp = new RegExp(matchedText);
-      console.log('regExp :', errorRegExp);
-      console.log('allLog:', log);
+      const matchedText = `[\\s\\n](?:${errorLogStatus.matchers.map((text) => `(?:${escapeRegExp(text)})`).join('|')})[\\s\\n]`;
+      const errorRegExp = new RegExp(matchedText, 'ig');
       log?.replace(errorRegExp, (errorMatched, offset) => {
-        htmlParts.push(log.slice(index, offset));
-        index = offset + errorMatched.length;
+        htmlParts.push(log.slice(index, offset + 1));
+        index = offset + errorMatched.length - 1;
         const idKey = `error${id++}`;
         ids.push(idKey);
         htmlParts.push(
           <span id={idKey} style={{ color: errorLogStatus.color }} key={idKey}>
-            {errorMatched}
+            {errorMatched.slice(1, errorMatched.length - 1)}
           </span>,
         );
         return errorMatched;
@@ -298,35 +295,30 @@ export default function ProcessesComponent() {
         return;
       }
 
-      console.log(
-        'pathReg',
-        /((?:(?:[a-z]:)|(?:\/))(?:[\\/]+[^/\\:*?"<>|]+)+[^/\\:*?"<>|]+\.[a-z\d]+)(?::(\d+):(\d+))?/,
-      );
       let innerIndex = 0;
-      console.log('logText', elementOrString);
       elementOrString?.replace(
-        /\\b((?:(?:[a-z]:)|(?:\/))(?:[\\/]+[^/\\:*?"<>|]+)+[^/\\:*?"<>|]+\.[a-z\d]+)(?::(\d+):(\d+))?\\b/gi,
-        (path, locate, row, col, innerOffset) => {
-          resultParts.push(elementOrString.slice(innerIndex, innerOffset));
-          innerIndex = innerOffset + path.length;
+        /[\s\n]((?:(?:[a-z]:)|(?:\/))(?:[\\/]+[^/\\:*?"<>|]+)+[^/\\:*?"<>|]+\.[a-z\d]+)(?:\((\d+)[^\d]+(\d+)\))?[\s\n]/gi,
+        (matched, path, row, col, innerOffset) => {
+          resultParts.push(elementOrString.slice(innerIndex, innerOffset + 1));
+
+          innerIndex = innerOffset + matched.length - 1;
 
           resultParts.push(
-            <Button
-              type="link"
+            <span
+              className="text-blue-400 cursor-pointer"
               onClick={() => {
                 jsonFetcher(
                   `/system/run?command=${encodeURIComponent(
-                    `code.cmd ${locate.replace(/\\+/g, '/')}:${row ?? 0}:${col ?? 0}`,
+                    `code.cmd --goto ${path.replace(/\\+/g, '/')}:${row ?? 0}:${col ?? 0}`,
                   )}`,
                   'GET',
                 );
               }}
-              target="_blank"
             >
               {path}
-            </Button>,
+            </span>,
           );
-          return path;
+          return matched;
         },
       );
 
