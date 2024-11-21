@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,10 @@ class RunningProcessTest {
         logStatusList.add(success);
         logStatusList.add(compiling);
         this.logStatusList = logStatusList;
+        String projectDir = System.getProperty("user.dir");
         runningProcess = new RunningProcess(
                 new String[]{"java", "MockProcess.java"},
-                "C:\\work\\local-development-console\\src\\test\\java\\com\\cs\\home\\process",
+                Paths.get(projectDir, "/src/test/java/com/cs/home/process").toString(),
                 logStatusList,
                 996);
     }
@@ -73,11 +75,11 @@ class RunningProcessTest {
             runningProcess.setStatusAndHighLightLog();
             assertEquals(compiling.getLabel(), runningProcess.getLogStatus().getLabel());
             assertEquals("compiling...\n<-PATH_WRAPPER row=3 " +
-                            "col=4>c:/work/processOutputLog" +
+                            "col=4 to-remove=(3,4)>c:/work/processOutputLog" +
                             ".txt(3,4)</-PATH_WRAPPER>\n" +
-                            "<-PATH_WRAPPER row= col=>/tmp/a" +
+                            "<-PATH_WRAPPER row= col= to-remove=>/tmp/a" +
                             ".java</-PATH_WRAPPER>\n<-PATH_WRAPPER row= " +
-                            "col=>d:\\work\\e.tsx</-PATH_WRAPPER>",
+                            "col= to-remove=>d:\\work\\e.tsx</-PATH_WRAPPER>",
                     runningProcess.readLog());
 
             runningProcess.stop();

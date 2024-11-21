@@ -215,7 +215,6 @@ public class RunningProcess {
 
     public String readLog() throws Exception {
         if (Files.exists(formatedLog.toPath())) {
-//            return Files.readString(formatedLog.toPath());
             int tryCount = 0;
             int maxTry = 5;
             while (tryCount++ < maxTry) {
