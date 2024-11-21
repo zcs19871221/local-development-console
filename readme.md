@@ -31,7 +31,7 @@ service status in real time by configuring log status monitoring.
 
 ## how to use
 
-1. download app from this **[link](https://github.com/zcs19871221/local-development-console/actions/runs/11780637951/artifacts/2171696552)**.
+1. download app from this **[link](https://github.com/zcs19871221/local-development-console/actions/runs/11957711488/artifacts/2219944753)**.
 
 2. double click run.bat (currently only support windows if you need linux or mac
    version, please create issue). You can close this cmd console, the Console
