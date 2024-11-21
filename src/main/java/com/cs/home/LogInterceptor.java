@@ -18,8 +18,8 @@ public class LogInterceptor implements HandlerInterceptor {
             HttpServletResponse response,
             Object handler) throws Exception {
 
-        log.info("[preHandle][" + request + "]" + "[" + request.getMethod()
-                + "]" + request.getRequestURI() + getParameters(request));
+//        log.info("[on request]" + "[" + request.getMethod()
+//                + "]" + request.getRequestURI() + getParameters(request));
 
         return true;
     }
@@ -30,7 +30,7 @@ public class LogInterceptor implements HandlerInterceptor {
                            HttpServletResponse response,
                            Object handler,
                            @Nullable ModelAndView modelAndView) throws Exception {
-        log.info("[postHandle][" + request + "]");
+//        log.info("[postHandle][" + request + "]");
     }
 
 

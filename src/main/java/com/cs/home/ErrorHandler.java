@@ -7,12 +7,14 @@ import org.springframework.context.MessageSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLException;
 import java.util.Locale;
@@ -61,10 +63,9 @@ public class ErrorHandler {
         return Response.create(ex.getLocalizedMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Response<String> handleException(Exception ex) {
-        log.error("", ex);
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response<String> handleEntityNotFound(EntityNotFoundException ex) {
         return Response.create(ex.getLocalizedMessage());
     }
 
@@ -76,6 +77,13 @@ public class ErrorHandler {
         // Note that the exception is NOT available to this view (it is not added
         // to the model) but see "Extending ExceptionHandlerExceptionResolver"
         // below.
+        return Response.create(ex.getLocalizedMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Response<String> handleException(Exception ex) {
+        log.error("", ex);
         return Response.create(ex.getLocalizedMessage());
     }
 }

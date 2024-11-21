@@ -2,8 +2,8 @@ package com.cs.home.system;
 
 
 import com.cs.home.HomeApplication;
-import com.cs.home.appProcesses.AppProcessService;
 import com.cs.home.common.Response;
+import com.cs.home.process.ProcessService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -24,7 +24,7 @@ import java.util.Locale;
 @Slf4j
 public class SystemController {
 
-    private final AppProcessService appProcessService;
+    private final ProcessService processService;
 
     private MessageSource messageSource;
 
@@ -36,8 +36,9 @@ public class SystemController {
     }
 
     @PutMapping("/shutdown")
-    Response<String> shutdown(Locale locale) throws IOException {
-        appProcessService.stopAll();
+    Response<String> shutdown(Locale locale) throws Exception {
+        HomeApplication.running = false;
+        processService.destroyAll();
         Runnable runnable = () -> {
             try {
                 Thread.sleep(5000);

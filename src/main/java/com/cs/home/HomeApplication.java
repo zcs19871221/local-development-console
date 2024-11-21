@@ -10,10 +10,12 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EntityScan
 @EnableSwagger2
 public class HomeApplication {
+    public static boolean running = false;
     public static ConfigurableApplicationContext applicationContext;
 
     public static void main(String[] args) {
         applicationContext = SpringApplication.run(HomeApplication.class, args);
+        running = true;
     }
 
 }

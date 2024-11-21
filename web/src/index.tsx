@@ -1,5 +1,5 @@
 import { useIntl } from 'react-intl';
-import { ConfigProvider, Layout, Menu, message, Select } from 'antd';
+import { ConfigProvider, Layout, Menu, message, Select, Alert } from 'antd';
 import { CloudServerOutlined } from '@ant-design/icons';
 import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -7,24 +7,24 @@ import { SWRConfig } from 'swr';
 
 import './index.css';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
-import { Content, Header } from 'antd/es/layout/layout';
-import Sider from 'antd/es/layout/Sider';
 import { jsonFetcher } from './common/fetcher.tsx';
 import {
   AppFormattedMessage,
   LocaleProvider,
   useLocale,
 } from './i18n/index.tsx';
-import LogStatus from './logStatus/index.tsx';
+import LogMonitor from './log_monitor/index.tsx';
 
 export type AvailableLocale = 'zh-CN' | 'en-US';
 
 const { Option } = Select;
+const { Sider, Content, Header } = Layout;
+const { ErrorBoundary } = Alert;
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => r.json().then((d) => d.data));
 
-const Processes = lazy(() => import('./processes/index.tsx'));
+const Processes = lazy(() => import('./process/index.tsx'));
 
 export const App = () => {
   const intl = useIntl();
@@ -54,7 +54,7 @@ export const App = () => {
           },
         }}
       >
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout className="h-full ">
           <Header className="text-white flex items-center">
             <div>
               <AppFormattedMessage
@@ -91,7 +91,7 @@ export const App = () => {
                 }}
                 items={[
                   {
-                    key: 'processes',
+                    key: 'process',
                     label: intl.formatMessage({
                       id: 'Service',
                       defaultMessage: '服务',
@@ -99,11 +99,8 @@ export const App = () => {
                     icon: <CloudServerOutlined />,
                   },
                   {
-                    key: 'logStatus',
-                    label: intl.formatMessage({
-                      id: 'LogStatus',
-                      defaultMessage: '日志状态',
-                    }),
+                    key: 'logMonitor',
+                    label: '日志监控',
                     icon: <CloudServerOutlined />,
                   },
                 ]}
@@ -112,12 +109,10 @@ export const App = () => {
             <Layout>
               <Content>
                 <Suspense fallback={<div>loading</div>}>
-                  <div className="ml-4 mr-4">
-                    <Routes>
-                      <Route path="/processes" element={<Processes />} />
-                      <Route path="/logStatus" element={<LogStatus />} />
-                    </Routes>
-                  </div>
+                  <Routes>
+                    <Route path="/process" element={<Processes />} />
+                    <Route path="/logMonitor/*" element={<LogMonitor />} />
+                  </Routes>
                 </Suspense>
               </Content>
             </Layout>
@@ -131,10 +126,12 @@ export const App = () => {
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <LocaleProvider defaultLocale="zh-cn">
-        <App />
-      </LocaleProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <LocaleProvider defaultLocale="zh-cn">
+          <App />
+        </LocaleProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

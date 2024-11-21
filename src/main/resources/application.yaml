@@ -1,6 +1,6 @@
 logging:
   file:
-    name: local-development-console.log
+    name: local-development-console.processOutputLog
   level:
     org:
       springframework:

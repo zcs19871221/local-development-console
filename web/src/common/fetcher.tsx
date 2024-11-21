@@ -1,5 +1,5 @@
 /* eslint-disable no-control-regex */
-import { message } from 'antd';
+import message from 'antd/es/message';
 import useSWR, { SWRConfiguration } from 'swr';
 
 export const base = 'http://localhost:9981/api';
