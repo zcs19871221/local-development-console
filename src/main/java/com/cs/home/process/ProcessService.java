@@ -11,7 +11,7 @@ public interface ProcessService {
 
     void restart(Integer processId) throws Exception;
 
-    void clearLog(Integer processId) throws IOException;
+    void clearLog(Integer processId) throws Exception;
 
     String getLog(Integer processId) throws Exception;
 
@@ -25,7 +25,7 @@ public interface ProcessService {
 
     List<ProcessResponse> getAll() throws Exception;
 
-    Map<Integer, RunningProcessResponse> runningProcesses() throws IOException;
+    Map<Integer, RunningProcessResponse> runningProcesses() throws Exception;
 
     List<String> getDistinctProcessPaths();
 }

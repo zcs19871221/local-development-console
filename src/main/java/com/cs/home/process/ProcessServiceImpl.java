@@ -60,10 +60,6 @@ public class ProcessServiceImpl implements ProcessService {
         idMapProcess.put(processId, rp);
     }
 
-    private void stop() {
-
-    }
-
     @Override
     public void stop(Integer processId) throws Exception {
         if (!idMapProcess.containsKey(processId)) {
@@ -122,8 +118,11 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public void clearLog(Integer processId) throws IOException {
-        Files.writeString(Paths.get(getLogPath(processId)), "");
+    public void clearLog(Integer processId) throws Exception {
+        RunningProcess runningProcess = idMapProcess.getOrDefault(processId, null);
+        if (runningProcess != null) {
+            runningProcess.clearLog();
+        }
     }
 
     @Override
@@ -135,7 +134,7 @@ public class ProcessServiceImpl implements ProcessService {
         return runningProcess.readLog();
     }
 
-    public synchronized Map<Integer, RunningProcessResponse> runningProcesses() throws IOException {
+    public synchronized Map<Integer, RunningProcessResponse> runningProcesses() throws Exception {
         Map<Integer, RunningProcessResponse> runningProcessResponseMap = new HashMap<>();
         if (!HomeApplication.running) {
             return runningProcessResponseMap;
