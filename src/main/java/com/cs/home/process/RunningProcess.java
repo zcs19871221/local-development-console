@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -27,84 +26,82 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class RunningProcess {
-    public static boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-    private static Map<String, String> commandMapExt = Map.of(
+    private static boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
+    private static Logger LOGGER = LoggerFactory.getLogger(RunningProcess.class);
+
+    private static Map<String, String> COMMAND_EXTENSIONS = Map.of(
             "npm", ".cmd",
             "code", ".cmd"
     );
+
+    private static final String DIRECTORY_NAME_OR_FILE_NAME_REGEXP = "[^\\s\\n\\\\/:*?\"<>|]+";
+
+    private static final Pattern PATH_PATTERN =
+            Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
+                            + DIRECTORY_NAME_OR_FILE_NAME_REGEXP + "\\3)*" +
+                            DIRECTORY_NAME_OR_FILE_NAME_REGEXP +
+                            "\\.[a-z][a-z\\d]+([:(](\\d+)[,:]?(\\d+)?[:)]?)?(?=[\\s\\n)']+|$))",
+                    Pattern.CASE_INSENSITIVE);
 
     private Long offsetByteInOutputLog = 0L;
     private LogStatusResponse logStatus = null;
     private Integer processId;
     private boolean running = false;
-    private static Logger logger = LoggerFactory.getLogger(RunningProcess.class);
     private java.lang.Process systemProcess;
-    private ProcessBuilder pb;
+    private ProcessBuilder processBuilder;
     private List<LogStatusResponse> logStatuses;
     private File processOutputLog;
-    private File formatedLog;
+    private File formattedLog;
     private String[] commands;
-    private String cwd;
-    private static String directoryNameOrFileNameRegexp = "[^\\s\\n\\\\/:*?\"<>|]+";
+    private String currentWorkingDirectory;
+
     public RunningProcess(String[] commands,
-                          String cwd,
+                          String currentWorkingDirectory,
                           List<LogStatusResponse> logStatuses,
                           Integer processId) throws IOException {
         commands[0] = ensureCommand(commands[0]);
         this.commands = commands;
-        this.cwd = cwd;
-        this.logStatuses = logStatuses;
+        this.currentWorkingDirectory = currentWorkingDirectory;
+        // make clearLogOnMatch ahead others, because we could delete useless log before other
+        // status handle it
+        this.logStatuses = logStatuses.stream()
+                .sorted((a, b) -> Boolean.compare(b.getClearLogOnMatch(), a.getClearLogOnMatch()))
+                .collect(Collectors.toList());
         this.processId = processId;
-        this.logStatuses.sort((a, b) -> {
-            if (a.getClearLogOnMatch() && b.getClearLogOnMatch()) {
-                return 0;
-            }
-            if (a.getClearLogOnMatch()) {
-                return -1;
-            }
-            return 1;
-        });
     }
 
-    private static Pattern pathPattern =
-            Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
-                            + directoryNameOrFileNameRegexp + "\\3)*" +
-                            directoryNameOrFileNameRegexp +
-                            "\\.[a-z][a-z\\d]+([:(](\\d+)[,:]?(\\d+)?[:)]?)?(?=[\\s\\n)']+|$))",
-                    Pattern.CASE_INSENSITIVE);
+    private List<LogStatusResponse> sortLogStatuses(List<LogStatusResponse> logStatuses) {
+        return logStatuses.stream()
+                .sorted((a, b) -> Boolean.compare(b.getClearLogOnMatch(), a.getClearLogOnMatch()))
+                .collect(Collectors.toList());
+    }
 
     private String ensureCommand(String command) {
-        if (command.contains(".") || !isWindows) {
+        if (command.contains(".") || !IS_WINDOWS) {
             return command;
         }
 
-        if (!commandMapExt.containsKey(command)) {
-            logger.warn("command {} in windows platform will add ext .exe, if there is not the .exe file, will throw error", command);
+        if (!COMMAND_EXTENSIONS.containsKey(command)) {
+            LOGGER.warn("command {} in windows platform will add ext .exe, if there is not the .exe file, will throw error", command);
             return command;
         }
 
-        return command + commandMapExt.getOrDefault(command, "");
+        return command + COMMAND_EXTENSIONS.getOrDefault(command, "");
     }
 
-    public void setStatusAndHighLightLog() throws Exception {
+    public void setStatusAndHighlightLog() throws Exception {
         running = systemProcess.isAlive();
         try (RandomAccessFile processOutputFile = new RandomAccessFile(processOutputLog,
                 "r")) {
             if (processOutputFile.length() == offsetByteInOutputLog) {
                 return;
             }
-            processWithLock(formatedLog, 10, 100,  (formatedLogFile) -> {
-                int len = (int) (processOutputFile.length() - offsetByteInOutputLog);
-                byte[] incrementalByte = new byte[len];
-                processOutputFile.seek(offsetByteInOutputLog);
-                processOutputFile.read(incrementalByte, 0, len);
-                offsetByteInOutputLog = processOutputFile.length();
-
-                String incrementalLog = new String(incrementalByte, StandardCharsets.UTF_8);
+            processWithLock(formattedLog, 10, 100,  (formatedLogFile) -> {
+                String incrementalLog = readIncrementalLog(processOutputFile);
 
                 LogStatusResponse matchedLogStatus = null;
                 int lastMatchedStart = -1;
-                boolean clearBefore = false;
+                boolean clearLog = false;
 
                 for (LogStatusResponse logStatus : logStatuses) {
                     Pattern statusPattern =
@@ -128,7 +125,7 @@ public class RunningProcess {
                     }
                     if (logStatus.getClearLogOnMatch()) {
                         incrementalLog = incrementalLog.substring(lastMatchedStart);
-                        clearBefore = true;
+                        clearLog = true;
                         continue;
                     }
                     if (logStatus.getIsErrorStatus()) {
@@ -139,13 +136,13 @@ public class RunningProcess {
                     logStatus = matchedLogStatus;
                 }
 
-                Matcher matcher = pathPattern.matcher(incrementalLog);
+                Matcher matcher = PATH_PATTERN.matcher(incrementalLog);
                 if (matcher.find()) {
                     incrementalLog = matcher.replaceAll("$1<-PATH_WRAPPER row=$5 col=$6 to-remove=$4>$2</-PATH_WRAPPER>");
                 }
 
                 byte[] incrementalLogBytes = incrementalLog.getBytes();
-                if (clearBefore) {
+                if (clearLog) {
                     formatedLogFile.seek(0);
                     formatedLogFile.write(incrementalLogBytes);
                     formatedLogFile.setLength(incrementalLogBytes.length);
@@ -158,32 +155,42 @@ public class RunningProcess {
         }
     }
 
+
+    private String readIncrementalLog(RandomAccessFile processOutputFile) throws IOException {
+        int len = (int) (processOutputFile.length() - offsetByteInOutputLog);
+        byte[] incrementalByte = new byte[len];
+        processOutputFile.seek(offsetByteInOutputLog);
+        processOutputFile.read(incrementalByte, 0, len);
+        offsetByteInOutputLog = processOutputFile.length();
+        return new String(incrementalByte, StandardCharsets.UTF_8);
+    }
+
     public void start() throws IOException {
         if (isRunning()) {
             return;
         }
 
-        pb = new ProcessBuilder(commands);
+        processBuilder = new ProcessBuilder(commands);
 
         String baseDir = System.getProperty("java.io.tmpdir");
         logStatus = null;
         processOutputLog = new File(Paths.get(baseDir, processId +
                 ".outputLog").toString());
-        formatedLog = new File(Paths.get(baseDir, processId +
+        formattedLog = new File(Paths.get(baseDir, processId +
                 ".formatedLog").toString());
         Files.writeString(processOutputLog.toPath(), "");
-        Files.writeString(formatedLog.toPath(), "");
-        logger.debug("process output log file: " + processOutputLog);
-        logger.debug("process formated output log file: " + formatedLog);
+        Files.writeString(formattedLog.toPath(), "");
+        LOGGER.debug("process output log file: " + processOutputLog);
+        LOGGER.debug("process formated output log file: " + formattedLog);
         offsetByteInOutputLog = 0L;
-        pb.directory(new File(cwd));
-        pb.redirectErrorStream(true);
-        pb.redirectOutput(processOutputLog);
+        processBuilder.directory(new File(currentWorkingDirectory));
+        processBuilder.redirectErrorStream(true);
+        processBuilder.redirectOutput(processOutputLog);
 
-        systemProcess = pb.start();
+        systemProcess = processBuilder.start();
         running = true;
-        logger.info("execute command: {} at {}, pid is : {}", String.join(" ", commands),
-                cwd, systemProcess.pid());
+        LOGGER.info("execute command: {} at {}, pid is : {}", String.join(" ", commands),
+                currentWorkingDirectory, systemProcess.pid());
     }
 
     public void stop() throws IOException {
@@ -192,15 +199,15 @@ public class RunningProcess {
             systemProcess.descendants().forEach(ProcessHandle::destroy);
             systemProcess.destroy();
         }
-        logger.info("command: {}  stopped",
+        LOGGER.info("command: {}  stopped",
                 String.join(" ", commands));
     }
 
     public String readLog() throws Exception {
-        if (!Files.exists(formatedLog.toPath())) {
+        if (!Files.exists(formattedLog.toPath())) {
             return "";
         }
-        return processWithLock(formatedLog, 200, 10, (formatedLogFile) -> {
+        return processWithLock(formattedLog, 200, 10, (formatedLogFile) -> {
             byte[] fileBytes = new byte[(int) formatedLogFile.length()];
             formatedLogFile.readFully(fileBytes);
             return new String(fileBytes, StandardCharsets.UTF_8);
@@ -208,10 +215,10 @@ public class RunningProcess {
     }
 
     public void clearLog() throws Exception {
-        if (!Files.exists(formatedLog.toPath())) {
+        if (!Files.exists(formattedLog.toPath())) {
             return;
         }
-        processWithLock(formatedLog, 200, 10, (formatedLogFile) -> {
+        processWithLock(formattedLog, 200, 10, (formatedLogFile) -> {
             formatedLogFile.setLength(0);
             return null;
         });
@@ -238,14 +245,14 @@ public class RunningProcess {
                  FileLock lock = channel.tryLock()) {
 
                 if (lock == null) {
-                    logger.info("File lock unavailable. Retrying... Attempt: {}", retryCount);
+                    LOGGER.info("File lock unavailable. Retrying... Attempt: {}", retryCount);
                     Thread.sleep(retryInterval);
                     continue;
                 }
 
                 return fileHandler.execute(targetFile);
             } catch (OverlappingFileLockException e) {
-                logger.warn("File is already locked. Retrying... Attempt: {}", retryCount);
+                LOGGER.warn("File is already locked. Retrying... Attempt: {}", retryCount);
                 Thread.sleep(retryInterval);
             } catch (Exception e) {
                 throw new ApplicationException("Error occurred while accessing or processing the locked file: " + file.toPath(), e);

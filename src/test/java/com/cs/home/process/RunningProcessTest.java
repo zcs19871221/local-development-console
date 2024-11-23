@@ -53,26 +53,26 @@ class RunningProcessTest {
             runningProcess.start();
             Thread.sleep(1050);
 
-            runningProcess.setStatusAndHighLightLog();
+            runningProcess.setStatusAndHighlightLog();
             assertNull(runningProcess.getLogStatus());
             assertTrue(runningProcess.isRunning());
             assertEquals("count 0\ncount 1\n", runningProcess.readLog());
 
             Thread.sleep(505);
-            runningProcess.setStatusAndHighLightLog();
+            runningProcess.setStatusAndHighlightLog();
             assertEquals(success.getLabel(), runningProcess.getLogStatus().getLabel());
             assertEquals("count 0\ncount 1\nsuccess\n",
                     runningProcess.readLog());
 
             Thread.sleep(505);
-            runningProcess.setStatusAndHighLightLog();
+            runningProcess.setStatusAndHighlightLog();
             assertEquals(errorLogStatus.getLabel(), runningProcess.getLogStatus().getLabel());
             assertEquals("count 0\ncount 1\nsuccess\nsuccess <-TAG_WRAPPER>error</-TAG_WRAPPER>\n",
                     runningProcess.readLog());
 
 
             Thread.sleep(505);
-            runningProcess.setStatusAndHighLightLog();
+            runningProcess.setStatusAndHighlightLog();
             assertEquals(compiling.getLabel(), runningProcess.getLogStatus().getLabel());
             assertEquals("compiling...\n<-PATH_WRAPPER row=3 " +
                             "col=4 to-remove=(3,4)>c:/work/processOutputLog" +

@@ -108,7 +108,7 @@ public class ProcessServiceImpl implements ProcessService {
             runningProcess.stop();
             Thread.sleep(1000);
             Files.deleteIfExists(runningProcess.getProcessOutputLog().toPath());
-            Files.deleteIfExists(runningProcess.getFormatedLog().toPath());
+            Files.deleteIfExists(runningProcess.getFormattedLog().toPath());
         }
     }
 
@@ -142,7 +142,7 @@ public class ProcessServiceImpl implements ProcessService {
         for (RunningProcess runningProcess :
                 idMapProcess.values()) {
 
-            runningProcess.setStatusAndHighLightLog();
+            runningProcess.setStatusAndHighlightLog();
             runningProcessResponseMap.put(runningProcess.getProcessId(), processMapper.map(runningProcess));
         }
         return runningProcessResponseMap;
