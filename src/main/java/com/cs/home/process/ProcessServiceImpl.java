@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public class ProcessServiceImpl implements ProcessService {
-    private static final ConcurrentHashMap<Integer, RunningProcess> idMapProcess =
+    public static final ConcurrentHashMap<Integer, RunningProcess> idMapProcess =
             new ConcurrentHashMap<>();
 
     private final ProcessRepository processRepository;
