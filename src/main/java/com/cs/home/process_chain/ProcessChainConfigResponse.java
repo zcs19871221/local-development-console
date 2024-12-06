@@ -11,6 +11,8 @@ public class ProcessChainConfigResponse {
     // Delay in milliseconds before starting the process
     private int delayInMilliseconds;
 
+    private Integer id;
+
     // ID of the process to start
     private Integer processId;
 
@@ -19,4 +21,6 @@ public class ProcessChainConfigResponse {
 
     // Child process configurations in the chain
     private List<ProcessChainConfigResponse> childProcessChainConfigs;
+
+    private Long version;
 }

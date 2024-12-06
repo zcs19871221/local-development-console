@@ -1,0 +1,21 @@
+{
+  "name": "zcs",
+  "processChainConfigs": [
+    {
+      "processId": 1,
+      "childProcessChainConfigs": [
+        {
+          "processId": 2
+        }
+      ]
+    },
+    {
+      "processId": 1,
+      "childProcessChainConfigs": [
+        {
+          "processId": 2
+        }
+      ]
+    }
+  ]
+}

@@ -26,23 +26,19 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class RunningProcess {
-    private static boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
-    private static Logger LOGGER = LoggerFactory.getLogger(RunningProcess.class);
-
-    private static Map<String, String> COMMAND_EXTENSIONS = Map.of(
-            "npm", ".cmd",
-            "code", ".cmd"
-    );
-
     private static final String DIRECTORY_NAME_OR_FILE_NAME_REGEXP = "[^\\s\\n\\\\/:*?\"<>|]+";
-
     private static final Pattern PATH_PATTERN =
             Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
                             + DIRECTORY_NAME_OR_FILE_NAME_REGEXP + "\\3)*" +
                             DIRECTORY_NAME_OR_FILE_NAME_REGEXP +
                             "\\.[a-z][a-z\\d]+([:(](\\d+)[,:]?(\\d+)?[:)]?)?(?=[\\s\\n)']+|$))",
                     Pattern.CASE_INSENSITIVE);
-
+    private static boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
+    private static Logger LOGGER = LoggerFactory.getLogger(RunningProcess.class);
+    private static Map<String, String> COMMAND_EXTENSIONS = Map.of(
+            "npm", ".cmd",
+            "code", ".cmd"
+    );
     private Long offsetByteInOutputLog = 0L;
     private LogStatusResponse logStatus = null;
     private Integer processId;
@@ -68,6 +64,61 @@ public class RunningProcess {
                 .sorted((a, b) -> Boolean.compare(b.getClearLogOnMatch(), a.getClearLogOnMatch()))
                 .collect(Collectors.toList());
         this.processId = processId;
+    }
+
+    /**
+     * Handles file operations with retries and locking mechanism.
+     *
+     * @param file          The target file to process.
+     * @param fileHandler   A callback to define file processing logic.
+     * @param maxRetry      Maximum retry attempts.
+     * @param retryInterval Interval between retries in milliseconds.
+     * @throws Exception If processing fails after retries.
+     */
+    public static <T> T processWithLock(File file, int maxRetry, int retryInterval, FileHandler<T> fileHandler) throws Exception {
+        int retryCount = 0;
+        // Validate inputs to ensure correct usage
+        validateInputs(file, fileHandler, maxRetry, retryInterval);
+
+        while (retryCount++ < maxRetry) {
+            try (RandomAccessFile targetFile = new RandomAccessFile(file, "rw");
+                 FileChannel channel = targetFile.getChannel();
+                 FileLock lock = channel.tryLock()) {
+
+                if (lock == null) {
+                    LOGGER.info("File lock unavailable. Retrying... Attempt: {}", retryCount);
+                    Thread.sleep(retryInterval);
+                    continue;
+                }
+
+                return fileHandler.execute(targetFile);
+            } catch (OverlappingFileLockException e) {
+                LOGGER.warn("File is already locked. Retrying... Attempt: {}", retryCount);
+                Thread.sleep(retryInterval);
+            } catch (Exception e) {
+                throw new ApplicationException("Error occurred while accessing or processing the locked file: " + file.toPath(), e);
+            }
+        }
+
+        throw new IllegalStateException("Max retries " + maxRetry + "reached. File processing failed.");
+    }
+
+    /**
+     * Validates input parameters to ensure they are correct.
+     */
+    private static <T> void validateInputs(File file, FileHandler<T> fileHandler, int maxRetry, int retryInterval) {
+        if (file == null || !file.exists()) {
+            throw new IllegalArgumentException("File must not be null and should exist.");
+        }
+        if (fileHandler == null) {
+            throw new IllegalArgumentException("FileHandler must not be null.");
+        }
+        if (maxRetry <= 0) {
+            throw new IllegalArgumentException("maxRetry must be greater than 0.");
+        }
+        if (retryInterval <= 0) {
+            throw new IllegalArgumentException("retryInterval must be greater than 0.");
+        }
     }
 
     private List<LogStatusResponse> sortLogStatuses(List<LogStatusResponse> logStatuses) {
@@ -96,7 +147,7 @@ public class RunningProcess {
             if (processOutputFile.length() == offsetByteInOutputLog) {
                 return;
             }
-            processWithLock(formattedLog, 10, 100,  (formatedLogFile) -> {
+            processWithLock(formattedLog, 10, 100, (formatedLogFile) -> {
                 String incrementalLog = readIncrementalLog(processOutputFile);
 
                 LogStatusResponse matchedLogStatus = null;
@@ -154,7 +205,6 @@ public class RunningProcess {
             });
         }
     }
-
 
     private String readIncrementalLog(RandomAccessFile processOutputFile) throws IOException {
         int len = (int) (processOutputFile.length() - offsetByteInOutputLog);
@@ -222,62 +272,6 @@ public class RunningProcess {
             formatedLogFile.setLength(0);
             return null;
         });
-    }
-
-
-    /**
-     * Handles file operations with retries and locking mechanism.
-     *
-     * @param file          The target file to process.
-     * @param fileHandler   A callback to define file processing logic.
-     * @param maxRetry      Maximum retry attempts.
-     * @param retryInterval Interval between retries in milliseconds.
-     * @throws Exception If processing fails after retries.
-     */
-    public static <T> T processWithLock(File file, int maxRetry, int retryInterval, FileHandler<T> fileHandler) throws Exception {
-        int retryCount = 0;
-        // Validate inputs to ensure correct usage
-        validateInputs(file, fileHandler, maxRetry, retryInterval);
-
-        while (retryCount++ < maxRetry ) {
-            try (RandomAccessFile targetFile = new RandomAccessFile(file, "rw");
-                 FileChannel channel = targetFile.getChannel();
-                 FileLock lock = channel.tryLock()) {
-
-                if (lock == null) {
-                    LOGGER.info("File lock unavailable. Retrying... Attempt: {}", retryCount);
-                    Thread.sleep(retryInterval);
-                    continue;
-                }
-
-                return fileHandler.execute(targetFile);
-            } catch (OverlappingFileLockException e) {
-                LOGGER.warn("File is already locked. Retrying... Attempt: {}", retryCount);
-                Thread.sleep(retryInterval);
-            } catch (Exception e) {
-                throw new ApplicationException("Error occurred while accessing or processing the locked file: " + file.toPath(), e);
-            }
-        }
-
-        throw new IllegalStateException("Max retries " + maxRetry + "reached. File processing failed.");
-    }
-
-    /**
-     * Validates input parameters to ensure they are correct.
-     */
-    private static <T> void validateInputs(File file, FileHandler<T> fileHandler, int maxRetry, int retryInterval) {
-        if (file == null || !file.exists()) {
-            throw new IllegalArgumentException("File must not be null and should exist.");
-        }
-        if (fileHandler == null) {
-            throw new IllegalArgumentException("FileHandler must not be null.");
-        }
-        if (maxRetry <= 0) {
-            throw new IllegalArgumentException("maxRetry must be greater than 0.");
-        }
-        if (retryInterval <= 0) {
-            throw new IllegalArgumentException("retryInterval must be greater than 0.");
-        }
     }
 
 }

@@ -48,7 +48,7 @@ public class ProcessChainController {
     }
 
     @PutMapping("/{processChainId}/stop")
-    public Response<String> executeProcessChain(@PathVariable Integer processChainId) throws Exception {
+    public Response<String> stopProcessChain(@PathVariable Integer processChainId) throws Exception {
         processChainService.stopProcessChain(processChainId);
         return Response.EmptyResponse();
     }

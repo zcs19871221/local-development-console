@@ -6,10 +6,15 @@ import com.cs.home.process.ProcessServiceImpl;
 import com.cs.home.process.RunningProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +32,8 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     @Override
     @Transactional
     public ProcessChainResponse createProcessChain(ProcessChainCreateRequest processChainCreateRequest) {
-        ProcessChain processChain = processChainRepository.save(processChainMapper.map(processChainCreateRequest));
+        ProcessChain xx = processChainMapper.map(processChainCreateRequest);
+        ProcessChain processChain = processChainRepository.save(xx);
         return processChainMapper.map(processChain);
     }
 
@@ -38,10 +44,51 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     }
 
     @Override
+    @Transactional
     public ProcessChainResponse updateProcessChain(ProcessChainUpdateRequest processChainUpdateRequest) {
-        validProcessChainId(processChainUpdateRequest.getId());
-        ProcessChain processChain = processChainRepository.save(processChainMapper.map(processChainUpdateRequest));
-        return processChainMapper.map(processChain);
+        ProcessChain existingProcessChain = processChainRepository.findById(processChainUpdateRequest.getId())
+                .orElseThrow(() -> new EntityNotFoundException("ProcessChain not found"));
+
+        if (!existingProcessChain.getVersion().equals(processChainUpdateRequest.getVersion())) {
+            throw new OptimisticLockingFailureException("ProcessChain has been modified by another transaction");
+        }
+
+        updateProcessChainConfigs(existingProcessChain.getProcessChainConfigs(),
+                processChainMapper.mapProcessChainConfigs(processChainUpdateRequest.getProcessChainConfigs())
+        );
+
+        existingProcessChain.setName(processChainUpdateRequest.getName());
+        processChainRepository.save(existingProcessChain);
+        return processChainMapper.map(existingProcessChain);
+    }
+
+    private void updateProcessChainConfigs(List<ProcessChainConfig> existingConfigs, List<ProcessChainConfig> newConfigs) {
+        Map<Integer, ProcessChainConfig> existingConfigMap = existingConfigs.stream()
+                .collect(Collectors.toMap(ProcessChainConfig::getId, Function.identity()));
+
+        Map<Integer, ProcessChainConfig> newConfigMap = newConfigs.stream()
+                .filter(processChainConfig -> processChainConfig.getId() != null)
+                .collect(Collectors.toMap(ProcessChainConfig::getId, Function.identity()));
+
+        existingConfigs.removeIf(
+                existingConfig -> !newConfigMap.containsKey(existingConfig.getId()));
+
+        for (ProcessChainConfig newConfig : newConfigs) {
+            ProcessChainConfig existingConfig = existingConfigMap.get(newConfig.getId());
+            if (existingConfig == null) {
+                existingConfigs.add(newConfig);
+            } else {
+                if (!existingConfig.getVersion().equals(newConfig.getVersion())) {
+                    throw new OptimisticLockingFailureException("ProcessChainConfig has been modified by another transaction");
+                }
+                existingConfig.setDelayInMilliseconds(newConfig.getDelayInMilliseconds());
+                existingConfig.setProcessId(newConfig.getProcessId());
+                existingConfig.setWaitForPreviousCompletion(newConfig.isWaitForPreviousCompletion());
+                updateProcessChainConfigs(existingConfig.getChildProcessChainConfigs(), newConfig.getChildProcessChainConfigs());
+            }
+        }
+
+
     }
 
     @Override
@@ -68,23 +115,23 @@ public class ProcessChainServiceImpl implements ProcessChainService {
         }
         RunningProcess prev = ProcessServiceImpl.idMapProcess.get(prevProcessId);
         for (ProcessChainConfig chainConfig : processChainConfigs) {
-             new Thread(() -> {
-                 try {
-                     if (chainConfig.isWaitForPreviousCompletion() && prev != null) {
-                         long startTime = System.currentTimeMillis(); // Get the current time in milliseconds
-                         while (prev.getSystemProcess().isAlive() && System.currentTimeMillis() - startTime < 60 * 1000) {
+            new Thread(() -> {
+                try {
+                    if (chainConfig.isWaitForPreviousCompletion() && prev != null) {
+                        long startTime = System.currentTimeMillis(); // Get the current time in milliseconds
+                        while (prev.getSystemProcess().isAlive() && System.currentTimeMillis() - startTime < 60 * 1000) {
 
-                         }
-                     }
-                     if (!chainConfig.isWaitForPreviousCompletion() && prev != null) {
+                        }
+                    }
+                    if (!chainConfig.isWaitForPreviousCompletion() && prev != null) {
                         Thread.sleep(chainConfig.getDelayInMilliseconds());
-                     }
-                     processService.start(chainConfig.getProcessId());
-                     doStartProcessChain(chainConfig.getChildProcessChainConfigs(), chainConfig.getProcessId());
-                 } catch (Exception e) {
-                     throw new RuntimeException(e);
-                 }
-             });
+                    }
+                    processService.start(chainConfig.getProcessId());
+                    doStartProcessChain(chainConfig.getChildProcessChainConfigs(), chainConfig.getProcessId());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
         }
     }
@@ -117,5 +164,6 @@ public class ProcessChainServiceImpl implements ProcessChainService {
             throw new IllegalArgumentException("processChain Id" + id + "does not exists");
         }
     }
+
 
 }

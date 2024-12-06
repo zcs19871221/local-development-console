@@ -20,4 +20,7 @@ public class ProcessChainUpdateRequest {
     @NotNull
     @Size(min = 1)
     private List<ProcessChainConfigRequest> processChainConfigs;
+
+    @NotNull
+    private Long version;
 }

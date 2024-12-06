@@ -1,6 +1,5 @@
 package com.cs.home.process_chain;
 
-import com.cs.home.log_monitor.LogMonitor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,8 +7,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -25,8 +22,9 @@ public class ProcessChain {
     @NotEmpty
     private String name;
 
-    @ElementCollection
-    @NotNull(message = "{processChainConfigsNotEmpty}")
-    @Size(min = 1, message = "{processChainConfigsNotEmpty}")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProcessChainConfig> processChainConfigs;
+
+    @Version
+    private Long version;
 }
