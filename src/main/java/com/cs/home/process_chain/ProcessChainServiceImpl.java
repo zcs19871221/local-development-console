@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,25 +23,25 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProcessChainServiceImpl implements ProcessChainService {
 
+    private static final int WAIT_FOR_PREVIOUS_TIMEOUT = 60 * 1000;
     private final ProcessChainRepository processChainRepository;
-
     private final ProcessChainMapper processChainMapper;
-
     private final ProcessService processService;
-
     private final ProcessRepository processRepository;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Override
     @Transactional
     public ProcessChainResponse createProcessChain(ProcessChainCreateRequest processChainCreateRequest) {
-        ProcessChain xx = processChainMapper.map(processChainCreateRequest);
-        ProcessChain processChain = processChainRepository.save(xx);
-        return processChainMapper.map(processChain);
+        ProcessChain processChain = processChainMapper.map(processChainCreateRequest);
+        ProcessChain savedProcessChain = processChainRepository.save(processChain);
+        return processChainMapper.map(savedProcessChain);
     }
 
     @Override
+    @Transactional
     public void deleteProcessChain(Integer id) {
-        validProcessChainId(id);
+        validateProcessChainId(id);
         processChainRepository.deleteById(id);
     }
 
@@ -58,8 +60,8 @@ public class ProcessChainServiceImpl implements ProcessChainService {
         );
 
         existingProcessChain.setName(processChainUpdateRequest.getName());
-        processChainRepository.save(existingProcessChain);
-        return processChainMapper.map(existingProcessChain);
+        ProcessChain updatedProcessChain = processChainRepository.save(existingProcessChain);
+        return processChainMapper.map(updatedProcessChain);
     }
 
     private void updateProcessChainConfigs(List<ProcessChainConfig> existingConfigs, List<ProcessChainConfig> newConfigs) {
@@ -70,8 +72,8 @@ public class ProcessChainServiceImpl implements ProcessChainService {
                 .filter(processChainConfig -> processChainConfig.getId() != null)
                 .collect(Collectors.toMap(ProcessChainConfig::getId, Function.identity()));
 
-        existingConfigs.removeIf(
-                existingConfig -> !newConfigMap.containsKey(existingConfig.getId()));
+        // Remove configs that are not in the new configs
+        existingConfigs.removeIf(existingConfig -> !newConfigMap.containsKey(existingConfig.getId()));
 
         for (ProcessChainConfig newConfig : newConfigs) {
             ProcessChainConfig existingConfig = existingConfigMap.get(newConfig.getId());
@@ -87,8 +89,6 @@ public class ProcessChainServiceImpl implements ProcessChainService {
                 updateProcessChainConfigs(existingConfig.getChildProcessChainConfigs(), newConfig.getChildProcessChainConfigs());
             }
         }
-
-
     }
 
     @Override
@@ -98,13 +98,14 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     }
 
     @Override
+    @Transactional
     public void startProcessChain(Integer processChainId) throws Exception {
-        validProcessChainId(processChainId);
+        validateProcessChainId(processChainId);
         ProcessChain processChain = processChainRepository.getReferenceById(processChainId);
         List<ProcessChainConfig> processChainConfigs = processChain.getProcessChainConfigs();
-        int matchedProcessCount = processChainRepository.findAllById(processChainConfigs.stream().map(ProcessChainConfig::getProcessId).toList()).size();
+        int matchedProcessCount = processRepository.findAllById(processChainConfigs.stream().map(ProcessChainConfig::getProcessId).toList()).size();
         if (matchedProcessCount != processChainConfigs.size()) {
-            throw new RuntimeException("processChain configs has invalid process");
+            throw new RuntimeException("ProcessChain configs have invalid processes");
         }
         doStartProcessChain(processChainConfigs, null);
     }
@@ -115,12 +116,12 @@ public class ProcessChainServiceImpl implements ProcessChainService {
         }
         RunningProcess prev = ProcessServiceImpl.idMapProcess.get(prevProcessId);
         for (ProcessChainConfig chainConfig : processChainConfigs) {
-            new Thread(() -> {
+            executorService.submit(() -> {
                 try {
                     if (chainConfig.isWaitForPreviousCompletion() && prev != null) {
-                        long startTime = System.currentTimeMillis(); // Get the current time in milliseconds
-                        while (prev.getSystemProcess().isAlive() && System.currentTimeMillis() - startTime < 60 * 1000) {
-
+                        long startTime = System.currentTimeMillis();
+                        while (prev.getSystemProcess().isAlive() && System.currentTimeMillis() - startTime < WAIT_FOR_PREVIOUS_TIMEOUT) {
+                            // Wait for the previous process to complete
                         }
                     }
                     if (!chainConfig.isWaitForPreviousCompletion() && prev != null) {
@@ -129,16 +130,17 @@ public class ProcessChainServiceImpl implements ProcessChainService {
                     processService.start(chainConfig.getProcessId());
                     doStartProcessChain(chainConfig.getChildProcessChainConfigs(), chainConfig.getProcessId());
                 } catch (Exception e) {
+                    log.error("Error starting process chain", e);
                     throw new RuntimeException(e);
                 }
             });
-
         }
     }
 
     @Override
+    @Transactional
     public void stopProcessChain(Integer processChainId) throws Exception {
-        validProcessChainId(processChainId);
+        validateProcessChainId(processChainId);
         ProcessChain processChain = processChainRepository.getReferenceById(processChainId);
         List<ProcessChainConfig> processChainConfigs = processChain.getProcessChainConfigs();
         doStopProcessChain(processChainConfigs);
@@ -154,16 +156,12 @@ public class ProcessChainServiceImpl implements ProcessChainService {
         }
     }
 
-
-    private void validProcessChainId(Integer id) {
+    private void validateProcessChainId(Integer id) {
         if (id == null) {
-            throw new IllegalArgumentException("processChain Id is null");
+            throw new IllegalArgumentException("ProcessChain ID is null");
         }
-
         if (!processChainRepository.existsById(id)) {
-            throw new IllegalArgumentException("processChain Id" + id + "does not exists");
+            throw new IllegalArgumentException("ProcessChain ID " + id + " does not exist");
         }
     }
-
-
 }
