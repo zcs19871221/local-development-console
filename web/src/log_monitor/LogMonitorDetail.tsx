@@ -193,16 +193,6 @@ export default function LogMonitorDetail() {
                       >
                         <Checkbox />
                       </Form.Item>
-                      <Form.Item
-                        name={[field.name, 'clearLogOnMatch']}
-                        label={intl.formatMessage({
-                          id: 'WhetherToClearThePreviousLog',
-                          defaultMessage: '是否清除之前日志',
-                        })}
-                        valuePropName="checked"
-                      >
-                        <Checkbox />
-                      </Form.Item>
                       <Button
                         onClick={() => {
                           remove(field.name);

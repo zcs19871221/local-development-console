@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ProcessChainServiceImpl implements ProcessChainService {
-
     private static final int WAIT_FOR_PREVIOUS_TIMEOUT = 60 * 1000;
     private final ProcessChainRepository processChainRepository;
     private final ProcessChainMapper processChainMapper;
@@ -50,15 +49,12 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     public ProcessChainResponse updateProcessChain(ProcessChainUpdateRequest processChainUpdateRequest) {
         ProcessChain existingProcessChain = processChainRepository.findById(processChainUpdateRequest.getId())
                 .orElseThrow(() -> new EntityNotFoundException("ProcessChain not found"));
-
         if (!existingProcessChain.getVersion().equals(processChainUpdateRequest.getVersion())) {
             throw new OptimisticLockingFailureException("ProcessChain has been modified by another transaction");
         }
-
         updateProcessChainConfigs(existingProcessChain.getProcessChainConfigs(),
                 processChainMapper.mapProcessChainConfigs(processChainUpdateRequest.getProcessChainConfigs())
         );
-
         existingProcessChain.setName(processChainUpdateRequest.getName());
         ProcessChain updatedProcessChain = processChainRepository.save(existingProcessChain);
         return processChainMapper.map(updatedProcessChain);
@@ -67,7 +63,6 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     private void updateProcessChainConfigs(List<ProcessChainConfig> existingConfigs, List<ProcessChainConfig> newConfigs) {
         Map<Integer, ProcessChainConfig> existingConfigMap = existingConfigs.stream()
                 .collect(Collectors.toMap(ProcessChainConfig::getId, Function.identity()));
-
         Map<Integer, ProcessChainConfig> newConfigMap = newConfigs.stream()
                 .filter(processChainConfig -> processChainConfig.getId() != null)
                 .collect(Collectors.toMap(ProcessChainConfig::getId, Function.identity()));

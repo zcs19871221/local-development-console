@@ -2,11 +2,11 @@ import { Route, Routes } from 'react-router-dom';
 import ProcessChainDetail from './ProcessChainDetail.tsx';
 import ProcessChainList from './ProcessChainDetail.tsx';
 
-export default function LogMonitorEntryPage() {
+export default function ProcessChainEntryPage() {
   return (
     <Routes>
       <Route path="/new" element={<ProcessChainDetail />} />
-      <Route path="/:logMonitorId" element={<ProcessChainDetail />} />
+      <Route path="/:processChainId" element={<ProcessChainDetail />} />
       <Route path="*" element={<ProcessChainList />} />
     </Routes>
   );

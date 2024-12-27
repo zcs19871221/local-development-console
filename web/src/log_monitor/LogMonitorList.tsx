@@ -32,20 +32,6 @@ export const logStatusColumn = () => [
     title: '是否错误状态',
     render: (val: boolean) => (val ? '是' : '否'),
   },
-  {
-    dataIndex: 'clearLogOnMatch',
-    title: '匹配时是否清除之前日志',
-    render: (val: boolean) =>
-      val
-        ? i18n.intl.formatMessage({
-            id: 'ClearLog',
-            defaultMessage: '清除日志',
-          })
-        : i18n.intl.formatMessage({
-            id: 'DoNotClearTheLog',
-            defaultMessage: '不清除日志',
-          }),
-  },
 ];
 
 export const LogMonitorTable = ({

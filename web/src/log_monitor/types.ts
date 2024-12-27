@@ -6,8 +6,6 @@ export interface LogStatus {
   logMatchPatterns: string[]; // Regex pattern to match in the log
 
   isErrorStatus?: boolean; // Indicates if this status is an error status
-
-  clearLogOnMatch?: boolean; // If true, clear the log when the pattern matches
 }
 
 export interface LogMonitor {

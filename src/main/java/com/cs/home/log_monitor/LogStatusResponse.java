@@ -13,7 +13,4 @@ public class LogStatusResponse {
     private String[] logMatchPatterns;  // Regex pattern to match in the processOutputLog
 
     private Boolean isErrorStatus;  // Indicates if this status is an error
-
-    private Boolean clearLogOnMatch; // If true, clear the processOutputLog when the pattern matches
-
 }

@@ -22,8 +22,4 @@ public class LogStatus {
 
     @NotNull
     private Boolean isErrorStatus = false;  // Indicates if this status is an error
-
-    @NotNull
-    private Boolean clearLogOnMatch = false; // If true, clear the processOutputLog when the pattern matches
-
 }
