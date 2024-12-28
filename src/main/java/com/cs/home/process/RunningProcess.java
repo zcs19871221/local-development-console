@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,14 +14,17 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class RunningProcess extends Observable {
+public class RunningProcess {
+    private final PropertyChangeSupport propertyChangeSupport;
+
     private static final String DIRECTORY_NAME_OR_FILE_NAME_REGEXP = "[^\\s\\n\\\\/:*?\"<>|]+";
     private static final Pattern PATH_PATTERN =
             Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
@@ -35,7 +39,6 @@ public class RunningProcess extends Observable {
             "code", ".cmd"
     );
     private BufferedReader br;
-    private Long offsetByteInOutputLog = 0L;
     private LogStatusResponse logStatus = null;
     private Integer processId;
     private boolean running = false;
@@ -46,7 +49,7 @@ public class RunningProcess extends Observable {
     private File formattedLog;
     private String[] commands;
     private String currentWorkingDirectory;
-    private boolean isWriting;
+    private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
 
     public RunningProcess(String[] commands,
                           String currentWorkingDirectory,
@@ -57,19 +60,33 @@ public class RunningProcess extends Observable {
         this.currentWorkingDirectory = currentWorkingDirectory;
         this.logStatuses = logStatuses;
         this.processId = processId;
+        propertyChangeSupport = new PropertyChangeSupport(this);
+        new Thread(this::processQueue).start();
+
     }
 
-    private void tryWrite(FileHandler fileHandler) throws Exception {
-        if (isWriting) {
-            addObserver(new FileWriterObserver(this));
-            return;
-        }
-        try {
-            fileHandler.execute();
-        } finally {
-            isWriting = false;
+    private void processQueue() {
+        while (true) {
+            try {
+                // Take the next task from the queue
+                Runnable task = taskQueue.take();
+                task.run(); // Execute the task
+            } catch (Exception e) {
+                LOGGER.error("some error when process queue", e);
+            }
         }
     }
+
+    private void submitTask(Runnable task) {
+        taskQueue.add(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
 
     private String ensureCommand(String command) {
         if (command.contains(".") || !IS_WINDOWS) {
@@ -85,7 +102,13 @@ public class RunningProcess extends Observable {
     }
 
     public void setStatusAndHighlightLog() throws Exception {
-        tryWrite(this::doSetStatusAndHighlightLog);
+        submitTask(() -> {
+            try {
+                doSetStatusAndHighlightLog();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public void doSetStatusAndHighlightLog() throws Exception {
@@ -152,7 +175,6 @@ public class RunningProcess extends Observable {
         Files.writeString(formattedLog.toPath(), "");
         LOGGER.debug("process output log file: " + processOutputLog);
         LOGGER.debug("process formated output log file: " + formattedLog);
-        offsetByteInOutputLog = 0L;
         processBuilder.directory(new File(currentWorkingDirectory));
         processBuilder.redirectErrorStream(true);
         processBuilder.redirectOutput(processOutputLog);
@@ -183,10 +205,13 @@ public class RunningProcess extends Observable {
             return;
         }
 
-        tryWrite(() -> {
-            Files.writeString(processOutputLog.toPath(), "");
+        submitTask(() -> {
+            try {
+                Files.writeString(processOutputLog.toPath(), "");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
-
     }
 
 }

@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RunningProcessTest {
 
-    private final LogStatusResponse compiling = LogStatusResponse.builder().logMatchPatterns(new String[]{"compiling..."}).clearLogOnMatch(true).label("compiling").labelColor("blue").isErrorStatus(false).build();
+    private final LogStatusResponse compiling = LogStatusResponse.builder().logMatchPatterns(new String[]{"compiling..."}).label("compiling").labelColor("blue").isErrorStatus(false).build();
 
-    private final LogStatusResponse errorLogStatus = LogStatusResponse.builder().logMatchPatterns(new String[]{"error", "wrong"}).isErrorStatus(true).label("error").labelColor("red").clearLogOnMatch(false).build();
+    private final LogStatusResponse errorLogStatus = LogStatusResponse.builder().logMatchPatterns(new String[]{"error", "wrong"}).isErrorStatus(true).label("error").labelColor("red").build();
 
-    private final LogStatusResponse success = LogStatusResponse.builder().logMatchPatterns(new String[]{"success"}).label("success").labelColor("green").clearLogOnMatch(false).isErrorStatus(false).build();
+    private final LogStatusResponse success = LogStatusResponse.builder().logMatchPatterns(new String[]{"success"}).label("success").labelColor("green").isErrorStatus(false).build();
 
     private List<LogStatusResponse> logStatusList = new ArrayList<>();
 
