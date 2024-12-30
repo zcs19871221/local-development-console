@@ -105,14 +105,16 @@ const Status = ({
                 defaultMessage: '未运行',
               })}
         </Tag>
-        <Tag
-          bordered={false}
-          color={logInfo?.logStatus?.labelColor}
-          className="flex align-middle cursor-pointer"
-          onClick={onClick}
-        >
-          {logInfo?.logStatus?.label}
-        </Tag>
+        {logInfo?.running && (
+          <Tag
+            bordered={false}
+            color={logInfo?.logStatus?.labelColor}
+            className="flex align-middle cursor-pointer"
+            onClick={onClick}
+          >
+            {logInfo?.logStatus?.label}
+          </Tag>
+        )}
       </div>
       <div className="text-grey mt-2">
         <Tooltip

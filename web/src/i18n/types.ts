@@ -62,6 +62,4 @@ export type LocalKey =
   | 'Success'
   | 'Unknown'
   | 'ViewLog'
-  | 'WhetherToClearThePreviousLog'
-  | 'WhetherToClearThePreviousLogIn_'
   | 'vCommandHasBeenSent';

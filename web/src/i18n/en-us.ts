@@ -68,9 +68,6 @@ const locale: Record<LocalKey, string> = {
   Success: 'Success',
   Unknown: 'Unknown',
   ViewLog: 'View log',
-  WhetherToClearThePreviousLog: 'Whether to clear the previous log',
-  WhetherToClearThePreviousLogIn_:
-    'Whether to clear the previous log in the current state',
   vCommandHasBeenSent: '{v1} command has been sent',
 };
 
