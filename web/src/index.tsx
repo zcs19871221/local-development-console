@@ -6,7 +6,13 @@ import { createRoot } from 'react-dom/client';
 import { SWRConfig } from 'swr';
 
 import './index.css';
-import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from 'react-router-dom';
 import { jsonFetcher } from './common/fetcher.tsx';
 import {
   AppFormattedMessage,
@@ -112,6 +118,8 @@ export const App = () => {
                   <Routes>
                     <Route path="/process" element={<Processes />} />
                     <Route path="/logMonitor/*" element={<LogMonitor />} />
+                    <Route path="/" element={<Navigate to="/process" />} />
+                    <Route path="*" element={<div>404</div>} />
                   </Routes>
                 </Suspense>
               </Content>
