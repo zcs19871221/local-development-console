@@ -12,6 +12,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PreDestroy;
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,6 +104,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
+    @PreDestroy
     public void destroyAll() throws Exception {
         for (RunningProcess runningProcess : idMapProcess.values()) {
             runningProcess.stop();
@@ -110,6 +112,7 @@ public class ProcessServiceImpl implements ProcessService {
             Files.deleteIfExists(runningProcess.getProcessOutputLog().toPath());
             Files.deleteIfExists(runningProcess.getFormattedLog().toPath());
         }
+        RunningProcess.isRunningThread.set(false);
     }
 
     private String getLogPath(Integer processId) {

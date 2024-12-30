@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class RunningProcess {
-    private final PropertyChangeSupport propertyChangeSupport;
-
+    public static final AtomicBoolean isRunningThread = new AtomicBoolean(false);
     private static final String DIRECTORY_NAME_OR_FILE_NAME_REGEXP = "[^\\s\\n\\\\/:*?\"<>|]+";
     private static final Pattern PATH_PATTERN =
             Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
@@ -32,12 +31,14 @@ public class RunningProcess {
                             DIRECTORY_NAME_OR_FILE_NAME_REGEXP +
                             "\\.[a-z][a-z\\d]+([:(](\\d+)[,:]?(\\d+)?[:)]?)?(?=[\\s\\n)']+|$))",
                     Pattern.CASE_INSENSITIVE);
+    private static final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
     private static boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
     private static Logger LOGGER = LoggerFactory.getLogger(RunningProcess.class);
     private static Map<String, String> COMMAND_EXTENSIONS = Map.of(
             "npm", ".cmd",
             "code", ".cmd"
     );
+    private static Thread daemonQueue = new Thread(RunningProcess::processQueue);
     private BufferedReader br;
     private LogStatusResponse logStatus = null;
     private Integer processId;
@@ -49,7 +50,6 @@ public class RunningProcess {
     private File formattedLog;
     private String[] commands;
     private String currentWorkingDirectory;
-    private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
 
     public RunningProcess(String[] commands,
                           String currentWorkingDirectory,
@@ -60,12 +60,14 @@ public class RunningProcess {
         this.currentWorkingDirectory = currentWorkingDirectory;
         this.logStatuses = logStatuses;
         this.processId = processId;
-        propertyChangeSupport = new PropertyChangeSupport(this);
-        new Thread(this::processQueue).start();
+        if (!isRunningThread.get()) {
+            daemonQueue.start();
+            isRunningThread.set(true);
+        }
 
     }
 
-    private void processQueue() {
+    private static void processQueue() {
         while (true) {
             try {
                 // Take the next task from the queue
@@ -77,7 +79,7 @@ public class RunningProcess {
         }
     }
 
-    private void submitTask(Runnable task) {
+    private static void submitTask(Runnable task) {
         taskQueue.add(() -> {
             try {
                 task.run();
@@ -207,7 +209,7 @@ public class RunningProcess {
 
         submitTask(() -> {
             try {
-                Files.writeString(processOutputLog.toPath(), "");
+                Files.writeString(formattedLog.toPath(), "");
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -270,7 +270,7 @@ export default function ProcessesComponent() {
     const anchorIds: string[] = [];
     let lastOffset: number = 0;
     log?.replace(
-      /(?:<-TAG_WRAPPER>([\s\S]+?)<\/-TAG_WRAPPER>)|(?:<-PATH_WRAPPER row=(\d*) col=(\d*) to-remove=([^>]+)>([\s\S]+?)<\/-PATH_WRAPPER>)/g,
+      /(?:<-TAG_WRAPPER>([\s\S]+?)<\/-TAG_WRAPPER>)|(?:<-PATH_WRAPPER row=(\d*) col=(\d*) to-remove=([^>]*)>([\s\S]+?)<\/-PATH_WRAPPER>)/g,
       (_match, errorTag, row, col, toRemove, path, offset) => {
         reactNodes.push(log.slice(lastOffset, offset));
         lastOffset = offset + _match.length;
