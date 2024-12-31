@@ -1,6 +1,8 @@
 package com.cs.home.process_chain;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
@@ -20,4 +22,8 @@ public interface ProcessChainMapper {
     List<ProcessChainConfig> mapProcessChainConfigs(List<ProcessChainConfigRequest> processChainConfigRequest);
 
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "childProcessChainConfigs", ignore = true)
+    void updateProcessChainConfig(ProcessChainConfig source, @MappingTarget ProcessChainConfig target);
 }

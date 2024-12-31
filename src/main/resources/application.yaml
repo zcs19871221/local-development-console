@@ -10,8 +10,6 @@ logging:
 server:
   port: 9981
 spring:
-  profiles:
-    active: debug
   h2:
     console:
       enabled: true

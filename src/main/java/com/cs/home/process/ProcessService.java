@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ProcessService {
-    void start(Integer processId) throws Exception;
+    RunningProcess start(Integer processId) throws Exception;
 
     void stop(Integer processId) throws Exception;
 

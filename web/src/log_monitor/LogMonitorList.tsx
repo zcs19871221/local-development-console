@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { KeyedMutator } from 'swr';
 import { useAppSwr, jsonFetcher } from '../common/fetcher.tsx';
 import { logMonitorBaseUrl, LogMonitor, LogStatus } from './types.ts';
-import { i18n } from '../i18n/index.tsx';
+
 import MainWrapper from '../common/MainWrapper.tsx';
 
 export const logStatusColumn = () => [

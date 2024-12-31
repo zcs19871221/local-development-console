@@ -60,11 +60,12 @@ public class RunningProcess {
         this.currentWorkingDirectory = currentWorkingDirectory;
         this.logStatuses = logStatuses;
         this.processId = processId;
-        if (!isRunningThread.get()) {
-            daemonQueue.start();
-            isRunningThread.set(true);
-        }
+    }
 
+    public static void startDaemon() {
+        LOGGER.info("start daemon queue");
+        daemonQueue.start();
+        isRunningThread.set(true);
     }
 
     private static void processQueue() {
@@ -155,7 +156,6 @@ public class RunningProcess {
             log.append("\n");
         }
         Files.write(formattedLog.toPath(), log.toString().getBytes(), StandardOpenOption.APPEND);
-
     }
 
 

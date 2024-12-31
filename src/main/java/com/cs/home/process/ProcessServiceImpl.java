@@ -12,6 +12,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
@@ -39,26 +40,27 @@ public class ProcessServiceImpl implements ProcessService {
 
     private final MessageSource messageSource;
 
-    public void start(Integer processId) throws Exception {
+    public RunningProcess start(Integer processId) throws Exception {
         validProcessExists(processId);
         RunningProcess existsRunningProcess = idMapProcess.getOrDefault(processId, null);
         if (existsRunningProcess != null && idMapProcess.get(processId).isRunning()) {
-            return;
+            return null;
         }
         if (existsRunningProcess != null) {
             existsRunningProcess.start();
-            return;
+            return existsRunningProcess;
         }
-        Process process = processRepository.getReferenceById(processId);
+        Optional<Process> process = processRepository.findById(processId);
 
-        LogMonitor logMonitor = process.getLogMonitor();
-        RunningProcess rp = new RunningProcess(process.getCommand().split(" "),
-                process.getPath(), (logMonitor != null && logMonitor.getStatusConfigurations() != null) ?
-                logMonitorMapper.map(process.getLogMonitor().getStatusConfigurations()) : new ArrayList<>(),
+        LogMonitor logMonitor = process.get().getLogMonitor();
+        RunningProcess rp = new RunningProcess(process.get().getCommand().split(" "),
+                process.get().getPath(), (logMonitor != null && logMonitor.getStatusConfigurations() != null) ?
+                logMonitorMapper.map(process.get().getLogMonitor().getStatusConfigurations()) : new ArrayList<>(),
                 processId
         );
         rp.start();
         idMapProcess.put(processId, rp);
+        return rp;
     }
 
     @Override
@@ -84,6 +86,11 @@ public class ProcessServiceImpl implements ProcessService {
                 processMapper.map(processCreated);
         ensureSetLogMonitor(process, processCreated.getLogMonitorId());
         return processMapper.map(processRepository.save(process));
+    }
+
+    @PostConstruct
+    private void startDaemon() {
+        RunningProcess.startDaemon();
     }
 
     @Override
