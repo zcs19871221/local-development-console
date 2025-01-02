@@ -28,11 +28,7 @@ export default function DetailLayout({
         >
           确定
         </Button>
-        <Button
-          onClick={() => onCancel()}
-        >
-          取消
-        </Button>
+        <Button onClick={() => onCancel()}>取消</Button>
       </Footer>
     </Layout>
   );

@@ -21,9 +21,6 @@ public interface ProcessChainMapper {
 
     List<ProcessChainConfig> mapProcessChainConfigs(List<ProcessChainConfigRequest> processChainConfigRequest);
 
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "version", ignore = true)
     @Mapping(target = "childProcessChainConfigs", ignore = true)
     void updateProcessChainConfig(ProcessChainConfig source, @MappingTarget ProcessChainConfig target);
 }

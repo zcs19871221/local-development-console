@@ -94,6 +94,14 @@ public class ProcessChainServiceImpl implements ProcessChainService {
     }
 
     @Override
+    public ProcessChainResponse getProcessChain(Integer processChainId) {
+        ProcessChain processChain = processChainRepository.findById(processChainId)
+                .orElseThrow(() -> new EntityNotFoundException("ProcessChain not found with ID: " +
+                        processChainId));
+        return processChainMapper.map(processChain);
+    }
+
+    @Override
     @Transactional
     public void startProcessChain(Integer processChainId) throws Exception {
         ProcessChain processChain = processChainRepository.findById(processChainId)
@@ -161,6 +169,12 @@ public class ProcessChainServiceImpl implements ProcessChainService {
         ProcessChain processChain = processChainRepository.getReferenceById(processChainId);
         List<ProcessChainConfig> processChainConfigs = processChain.getProcessChainConfigs();
         doStopProcessChain(processChainConfigs);
+    }
+
+    @Override
+    public void restartProcessChain(Integer processChainId) throws Exception {
+        stopProcessChain(processChainId);
+        startProcessChain(processChainId);
     }
 
     private void doStopProcessChain(List<ProcessChainConfig> processChainConfigs) throws Exception {

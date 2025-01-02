@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import ProcessChainDetail from './ProcessChainDetail.tsx';
-import ProcessChainList from './ProcessChainDetail.tsx';
+import ProcessChainList from './ProcessChainList.tsx';
 
 export default function ProcessChainEntryPage() {
   return (

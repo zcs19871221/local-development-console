@@ -11,7 +11,12 @@ public interface ProcessChainService {
 
     List<ProcessChainResponse> getAllProcessChain();
 
+    ProcessChainResponse getProcessChain(Integer processChainId);
+
     void startProcessChain(Integer processChainId) throws Exception;
 
     void stopProcessChain(Integer processChainId) throws Exception;
+
+    void restartProcessChain(Integer processChainId) throws Exception;
+
 }

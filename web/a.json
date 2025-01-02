@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": 2,
+      "command": "npm run sv-xuat",
+      "description": "UI SERVER XUAT",
+      "path": "c:/work/eh-ui",
+      "logMonitor": null
+    },
+    {
+      "id": 55,
+      "command": "npm run bd-xuat",
+      "description": "UI BUILD XUAT",
+      "path": "c:/work/eh-ui",
+      "logMonitor": null
+    },
+    {
+      "id": 56,
+      "command": "npm run sv-xuat",
+      "description": "BFF SERVER XUAT",
+      "path": "c:/work/eh-bff",
+      "logMonitor": null
+    },
+    {
+      "id": 57,
+      "command": "npm run bd-xuat",
+      "description": "BFF BUILD XUAT",
+      "path": "c:/work/eh-bff",
+      "logMonitor": null
+    }
+  ]
+}

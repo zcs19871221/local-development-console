@@ -1,36 +1,25 @@
-export interface ProcessChainConfigResponse {
+import { MakeTypeOptionalRecursively } from '../common/types.ts';
+
+export interface IdAndVersion {
   id: number;
-  delayInMilliseconds?: number;
+  version: number;
+}
+
+export interface ProcessChainConfigResponse extends IdAndVersion {
   processId: number;
+  delayInMilliseconds?: number;
   waitForPreviousCompletion?: boolean;
   childProcessChainConfigs?: ProcessChainConfigResponse[];
-  version: number;
 }
 
-export interface ProcessChainResponse {
-  id: number;
+export interface ProcessChainResponse extends IdAndVersion {
   name: string;
   processChainConfigs?: ProcessChainConfigResponse[];
-  version: number;
 }
-type OmitIdAndVersion<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? OmitIdAndVersion<U>[]
-    : P extends 'id' | 'version'
-      ? T[P] | undefined
-      : T[P];
-};
 
-export type ProcessChainConfigRequest =
-  OmitIdAndVersion<ProcessChainConfigResponse>;
+export type ProcessChainCreateOrUpdateRequest = MakeTypeOptionalRecursively<
+  ProcessChainResponse,
+  IdAndVersion
+>;
 
-export const x: ProcessChainConfigRequest = {
-  childProcessChainConfigs: [
-    {
-      id: 3,
-      processId: 2,
-      version: 1,
-    },
-  ],
-};
-export const apiBase = '/api/processChain';
+export const processChainApiBase = '/processChain';

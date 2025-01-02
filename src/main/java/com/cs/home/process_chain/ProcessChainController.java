@@ -9,6 +9,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/processChain")
 @RequiredArgsConstructor
+@CrossOrigin
 public class ProcessChainController {
 
     private final ProcessChainService processChainService;
@@ -41,6 +42,12 @@ public class ProcessChainController {
         return Response.create(responses);
     }
 
+    @GetMapping("/{processChainId}")
+    public Response<ProcessChainResponse> getProcessChain(@PathVariable Integer processChainId) {
+        ProcessChainResponse response = processChainService.getProcessChain(processChainId);
+        return Response.create(response);
+    }
+
     @PutMapping("/{processChainId}/start")
     public Response<String> startProcessChain(@PathVariable Integer processChainId) throws Exception {
         processChainService.startProcessChain(processChainId);
@@ -50,6 +57,12 @@ public class ProcessChainController {
     @PutMapping("/{processChainId}/stop")
     public Response<String> stopProcessChain(@PathVariable Integer processChainId) throws Exception {
         processChainService.stopProcessChain(processChainId);
+        return Response.EmptyResponse();
+    }
+
+    @PutMapping("/{processChainId}/restart")
+    public Response<String> restartProcessChain(@PathVariable Integer processChainId) throws Exception {
+        processChainService.restartProcessChain(processChainId);
         return Response.EmptyResponse();
     }
 }

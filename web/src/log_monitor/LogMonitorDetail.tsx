@@ -20,7 +20,7 @@ import {
   LogMonitorCreatedOrUpdated,
 } from './types.ts';
 import { jsonFetcher, useAppSwr } from '../common/fetcher.tsx';
-import DetailLayout from '../common/LogMonitorDetail.tsx';
+import DetailLayout from '../common/DetailLayout.tsx';
 
 type Presets = Required<ColorPickerProps>['presets'][number];
 

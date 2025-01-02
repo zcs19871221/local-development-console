@@ -20,6 +20,7 @@ import {
   useLocale,
 } from './i18n/index.tsx';
 import LogMonitor from './log_monitor/index.tsx';
+import ProcessChain from './process_chain/index.tsx';
 
 export type AvailableLocale = 'zh-CN' | 'en-US';
 
@@ -109,6 +110,11 @@ export const App = () => {
                     label: '日志监控',
                     icon: <CloudServerOutlined />,
                   },
+                  {
+                    key: 'processChain',
+                    label: '服务链',
+                    icon: <CloudServerOutlined />,
+                  },
                 ]}
               />
             </Sider>
@@ -118,6 +124,7 @@ export const App = () => {
                   <Routes>
                     <Route path="/process" element={<Processes />} />
                     <Route path="/logMonitor/*" element={<LogMonitor />} />
+                    <Route path="/processChain/*" element={<ProcessChain />} />
                     <Route path="/" element={<Navigate to="/process" />} />
                     <Route path="*" element={<div>404</div>} />
                   </Routes>
