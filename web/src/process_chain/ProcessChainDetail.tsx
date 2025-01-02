@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import {
   Button,
   Card,
@@ -10,7 +11,7 @@ import {
   Skeleton,
 } from 'antd';
 import { useIntl } from 'react-intl';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLayoutEffect, useState } from 'react';
 
 import { FormListProps } from 'antd/es/form/FormList';
@@ -22,10 +23,13 @@ import {
   ProcessChainResponse,
 } from './types.ts';
 import { Process, processesApiBase } from '../process/types.ts';
+import safeParse from '../common/safeParse.ts';
 
 export default function ProcessChainDetail() {
   const intl = useIntl();
   const { processChainId } = useParams();
+  const [params] = useSearchParams();
+  const initFormData = decodeURIComponent(params.get('data') ?? '');
   const [form] = Form.useForm<ProcessChainCreateOrUpdateRequest>();
   const { data, isLoading } = useAppSwr<ProcessChainResponse>(
     processChainId ? `${processChainApiBase}/${processChainId}` : undefined,
@@ -42,8 +46,10 @@ export default function ProcessChainDetail() {
     }
     if (data) {
       form.setFieldsValue(data);
+    } else if (initFormData) {
+      form.setFieldsValue(safeParse(initFormData));
     }
-  }, [data, form, isLoading]);
+  }, [data, form, initFormData, isLoading]);
 
   const handleChildrenProcess: FormListProps['children'] = (
     fields,
@@ -60,7 +66,8 @@ export default function ProcessChainDetail() {
             rules={[{ required: true, message: '请选择服务' }]}
           >
             <Select
-              onChange={(processId) => {
+              onChange={(processId, ...rest) => {
+                console.log(rest);
                 setSelectedProcessId((prev) => new Set([...prev, processId]));
               }}
             >
@@ -111,6 +118,31 @@ export default function ProcessChainDetail() {
 
   return (
     <DetailLayout
+      onCopy={async () => {
+        const values = await form.validateFields();
+        const newValues = { ...values };
+        delete newValues.id;
+        delete newValues.version;
+
+        const copyAndDelIdAndVersion = (
+          processChainConfigs: typeof values.processChainConfigs,
+        ) =>
+          processChainConfigs?.map((config) => {
+            config = { ...config };
+            delete config.id;
+            delete config.version;
+            config.childProcessChainConfigs = copyAndDelIdAndVersion(
+              config.childProcessChainConfigs,
+            );
+            return config;
+          });
+        newValues.processChainConfigs = copyAndDelIdAndVersion(
+          newValues.processChainConfigs,
+        );
+        navigate(
+          `../new?data=${encodeURIComponent(JSON.stringify(newValues))}`,
+        );
+      }}
       onSubmit={async () => {
         const values = await form.validateFields();
 

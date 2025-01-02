@@ -51,7 +51,7 @@ export const App = () => {
       }}
     >
       <ConfigProvider
-        locale={{ locale: 'en-us' }}
+        locale={{ locale }}
         theme={{
           token: {
             // Seed Token
@@ -119,13 +119,13 @@ export const App = () => {
               />
             </Sider>
             <Layout>
-              <Content>
+              <Content className="overflow-scroll">
                 <Suspense fallback={<div>loading</div>}>
                   <Routes>
                     <Route path="/process" element={<Processes />} />
                     <Route path="/logMonitor/*" element={<LogMonitor />} />
                     <Route path="/processChain/*" element={<ProcessChain />} />
-                    <Route path="/" element={<Navigate to="/process" />} />
+                    <Route path="/" element={<Navigate to="/processChain" />} />
                     <Route path="*" element={<div>404</div>} />
                   </Routes>
                 </Suspense>

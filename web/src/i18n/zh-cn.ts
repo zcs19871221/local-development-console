@@ -45,7 +45,6 @@ const locale: Record<LocalKey, string> = {
   LogStatusName: '日志状态名称',
   MatchingRule: '匹配规则',
   Name: '名称',
-  NameOrDescription: '名称或描述',
   NotAValidRegularExpression: '不是有效的正则表达式',
   NotOpen: '未开启',
   NotRunning: '未运行',

@@ -5,11 +5,13 @@ export default function DetailLayout({
   title,
   children,
   onSubmit,
+  onCopy,
   onCancel,
 }: {
   title: string;
   children: React.ReactNode;
   onSubmit: () => void;
+  onCopy?: () => void;
   onCancel: () => void;
 }) {
   return (
@@ -19,16 +21,28 @@ export default function DetailLayout({
         {children}
       </Content>
       <Footer className="space-x-5 flex">
+        <Button onClick={() => onCancel()} className="ml-auto">
+          取消
+        </Button>
+        {onCopy && (
+          <Button
+            color="primary"
+            variant="outlined"
+            onClick={() => {
+              onCopy();
+            }}
+          >
+            复制
+          </Button>
+        )}
         <Button
           type="primary"
-          className="ml-auto"
           onClick={() => {
             onSubmit();
           }}
         >
           确定
         </Button>
-        <Button onClick={() => onCancel()}>取消</Button>
       </Footer>
     </Layout>
   );

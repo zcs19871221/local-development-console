@@ -39,7 +39,6 @@ export type LocalKey =
   | 'LogStatusName'
   | 'MatchingRule'
   | 'Name'
-  | 'NameOrDescription'
   | 'NotAValidRegularExpression'
   | 'NotOpen'
   | 'NotRunning'

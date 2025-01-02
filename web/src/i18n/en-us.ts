@@ -45,7 +45,6 @@ const locale: Record<LocalKey, string> = {
   LogStatusName: 'Log status name',
   MatchingRule: 'Matching rule',
   Name: 'Name',
-  NameOrDescription: 'Name or description',
   NotAValidRegularExpression: 'Not a valid regular expression',
   NotOpen: 'Not open',
   NotRunning: 'Not running',

@@ -15,7 +15,7 @@ import {
   ExclamationCircleFilled,
   FileAddOutlined,
 } from '@ant-design/icons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Select, { DefaultOptionType } from 'antd/es/select/index';
 import useSWR from 'swr';
@@ -66,6 +66,8 @@ export default function ProcessesComponent() {
     `${processesApiBase}/distinctProcessPaths`,
   );
 
+  const isCopyingRef = useRef(false);
+  const [, setRenderFlag] = useState(0);
   return (
     <MainWrapper>
       <div className="flex justify-center items-center h-8">
@@ -177,6 +179,22 @@ export default function ProcessesComponent() {
         okButtonProps={{ autoFocus: true, htmlType: 'submit' }}
         onCancel={() => setShowProcessesForm(false)}
         destroyOnClose
+        footer={[
+          <Button onClick={() => setShowProcessesForm(false)}>取消</Button>,
+          <Button
+            onClick={() => {
+              isCopyingRef.current = true;
+            }}
+            color="primary"
+            variant="outlined"
+            htmlType="submit"
+          >
+            复制
+          </Button>,
+          <Button htmlType="submit" type="primary">
+            提交
+          </Button>,
+        ]}
         modalRender={(dom) => (
           <Form
             layout="vertical"
@@ -184,7 +202,12 @@ export default function ProcessesComponent() {
             name="form_in_modal"
             onFinish={(values) => {
               const id = processesForm.getFieldValue('id');
-
+              if (isCopyingRef.current) {
+                isCopyingRef.current = false;
+                processesForm.setFieldValue('id', undefined);
+                setRenderFlag((prev) => prev + 1);
+                return;
+              }
               jsonFetcher<ProcessesCreatedOrUpdated>(
                 processesApiBase,
                 id !== undefined ? 'PUT' : 'POST',
@@ -269,9 +292,10 @@ export default function ProcessesComponent() {
         </Form.Item>
         <Form.Item
           name="description"
+          required
           label={intl.formatMessage({
-            id: 'NameOrDescription',
-            defaultMessage: '名称或描述',
+            id: 'Name',
+            defaultMessage: '名称',
           })}
         >
           <Input />

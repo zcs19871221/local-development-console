@@ -66,6 +66,7 @@ export default function ProcessChainList() {
         </Tooltip>
       </div>
       <Table
+        pagination={false}
         loading={isLoading}
         rowKey="id"
         dataSource={data}
@@ -161,7 +162,7 @@ export default function ProcessChainList() {
             ),
           },
           {
-            title: '项目树',
+            title: '服务依赖关系树',
             render: (_, record: ProcessChainResponse) => {
               const getPath = (
                 processChainConfigs: ProcessChainConfigResponse[],
