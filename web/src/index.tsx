@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useIntl } from 'react-intl';
 import { ConfigProvider, Layout, Menu, message, Select, Alert } from 'antd';
 import { CloudServerOutlined } from '@ant-design/icons';
@@ -141,6 +142,7 @@ export const App = () => {
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    {/* @ts-expect-error */}
     <ErrorBoundary>
       <BrowserRouter>
         <LocaleProvider defaultLocale="zh-cn">
