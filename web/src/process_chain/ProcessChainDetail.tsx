@@ -66,8 +66,7 @@ export default function ProcessChainDetail() {
             rules={[{ required: true, message: '请选择服务' }]}
           >
             <Select
-              onChange={(processId, ...rest) => {
-                console.log(rest);
+              onChange={(processId) => {
                 setSelectedProcessId((prev) => new Set([...prev, processId]));
               }}
             >
