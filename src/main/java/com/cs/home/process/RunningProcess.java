@@ -38,6 +38,7 @@ public class RunningProcess {
             "npm", ".cmd",
             "code", ".cmd"
     );
+    private static Boolean runningDaemonQueue = true;
     private static Thread daemonQueue = new Thread(RunningProcess::processQueue);
     private BufferedReader br;
     private LogStatusResponse logStatus = null;
@@ -69,7 +70,7 @@ public class RunningProcess {
     }
 
     private static void processQueue() {
-        while (true) {
+        while (runningDaemonQueue) {
             try {
                 // Take the next task from the queue
                 Runnable task = taskQueue.take();
@@ -78,6 +79,10 @@ public class RunningProcess {
                 LOGGER.error("some error when process queue", e);
             }
         }
+    }
+
+    public static void stopDaemonQueue() {
+        runningDaemonQueue = false;
     }
 
     private static void submitTask(Runnable task) {

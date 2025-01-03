@@ -113,6 +113,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     @PreDestroy
     public void destroyAll() throws Exception {
+        RunningProcess.stopDaemonQueue();
         for (RunningProcess runningProcess : idMapProcess.values()) {
             runningProcess.stop();
             Thread.sleep(1000);
