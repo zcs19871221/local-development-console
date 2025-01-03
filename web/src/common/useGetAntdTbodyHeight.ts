@@ -39,7 +39,6 @@ const useGetAntdTbodyHeight = (tableToBottom: number) => {
     return () => clearTimeout(timer);
   }, [tableDomRef, recalculateFlag]);
 
-  console.log(tbodyOffsetTop);
   const scroll: React.ComponentProps<typeof Table>['scroll'] = useMemo(
     () => ({
       y: window.innerHeight - tbodyOffsetTop - tableToBottom,
