@@ -38,9 +38,9 @@ public class RunningProcess {
             "npm", ".cmd",
             "code", ".cmd"
     );
-    private static Boolean runningDaemonQueue = true;
     private static Thread daemonQueue = new Thread(RunningProcess::processQueue);
     private BufferedReader br;
+    private FileInputStream fileInputStream;
     private LogStatusResponse logStatus = null;
     private Integer processId;
     private boolean running = false;
@@ -65,12 +65,12 @@ public class RunningProcess {
 
     public static void startDaemon() {
         LOGGER.info("start daemon queue");
-        daemonQueue.start();
         isRunningThread.set(true);
+        daemonQueue.start();
     }
 
     private static void processQueue() {
-        while (runningDaemonQueue) {
+        while (isRunningThread.get()) {
             try {
                 // Take the next task from the queue
                 Runnable task = taskQueue.take();
@@ -82,7 +82,7 @@ public class RunningProcess {
     }
 
     public static void stopDaemonQueue() {
-        runningDaemonQueue = false;
+        isRunningThread.set(false);
     }
 
     private static void submitTask(Runnable task) {
@@ -95,6 +95,14 @@ public class RunningProcess {
         });
     }
 
+    public void destory() throws IOException, InterruptedException {
+        stop();
+        Thread.sleep(1000);
+        br.close();
+
+        Files.deleteIfExists(processOutputLog.toPath());
+        Files.deleteIfExists(formattedLog.toPath());
+    }
 
     private String ensureCommand(String command) {
         if (command.contains(".") || !IS_WINDOWS) {
@@ -185,7 +193,7 @@ public class RunningProcess {
         processBuilder.directory(new File(currentWorkingDirectory));
         processBuilder.redirectErrorStream(true);
         processBuilder.redirectOutput(processOutputLog);
-        FileInputStream fileInputStream = new FileInputStream(processOutputLog);
+        fileInputStream = new FileInputStream(processOutputLog);
         br = new BufferedReader(new InputStreamReader(fileInputStream));
         systemProcess = processBuilder.start();
         running = true;
@@ -199,6 +207,8 @@ public class RunningProcess {
             systemProcess.descendants().forEach(ProcessHandle::destroy);
             systemProcess.destroy();
         }
+        br.close();
+        fileInputStream.close();
         LOGGER.info("command: {}  stopped",
                 String.join(" ", commands));
     }

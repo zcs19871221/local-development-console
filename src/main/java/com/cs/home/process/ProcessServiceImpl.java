@@ -16,7 +16,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -115,12 +114,8 @@ public class ProcessServiceImpl implements ProcessService {
     public void destroyAll() throws Exception {
         RunningProcess.stopDaemonQueue();
         for (RunningProcess runningProcess : idMapProcess.values()) {
-            runningProcess.stop();
-            Thread.sleep(1000);
-            Files.deleteIfExists(runningProcess.getProcessOutputLog().toPath());
-            Files.deleteIfExists(runningProcess.getFormattedLog().toPath());
+            runningProcess.destory();
         }
-        RunningProcess.isRunningThread.set(false);
     }
 
     private String getLogPath(Integer processId) {
