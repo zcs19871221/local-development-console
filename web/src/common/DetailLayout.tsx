@@ -16,11 +16,11 @@ export default function DetailLayout({
 }) {
   return (
     <Layout className="h-full flex flex-col">
-      <Header className=" bg-white">{title}</Header>
-      <Content className="flex-auto flex-grow p-4 overflow-scroll">
+      <Header className=" bg-white pl-4">{title}</Header>
+      <Content className="flex-auto flex-grow p-4 overflow-auto">
         {children}
       </Content>
-      <Footer className="space-x-5 flex">
+      <Footer className="space-x-5 flex h-12 shrink-0 grow-0 p-0 items-center pr-8 pl-4">
         <Button onClick={() => onCancel()} className="ml-auto">
           取消
         </Button>

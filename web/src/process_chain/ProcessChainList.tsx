@@ -9,9 +9,10 @@ import {
   RedoOutlined,
 } from '@ant-design/icons';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import { css } from '@linaria/core';
+import { useMemo } from 'react';
 import MainWrapper from '../common/MainWrapper.tsx';
 import { jsonFetcher, useAppSwr } from '../common/fetcher.tsx';
 import {
@@ -19,18 +20,37 @@ import {
   ProcessChainConfigResponse,
   ProcessChainResponse,
 } from './types.ts';
-import { Process, processesApiBase } from '../process/types.ts';
-import ProcessTable from '../process/ProcessTable.tsx';
+import { LogInfo, Process, processesApiBase } from '../process/types.ts';
+import ProcessTable, { RunningTag } from '../process/ProcessTable.tsx';
 
 export default function ProcessChainList() {
   const navigate = useNavigate();
   const intl = useIntl();
   const { data, mutate, isLoading } =
     useAppSwr<ProcessChainResponse[]>(processChainApiBase);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: processes, isLoading: loadingProcesses } =
     useAppSwr<Process[]>(processesApiBase);
 
+  const processChains = useMemo(
+    () =>
+      data?.map((chain) => {
+        const processIds: number[] = [];
+        const getProcessId = (chainConfigs?: ProcessChainConfigResponse[]) => {
+          chainConfigs?.forEach((chainConfig) => {
+            processIds.push(chainConfig.processId);
+            getProcessId(chainConfig.childProcessChainConfigs);
+          });
+        };
+        getProcessId(chain.processChainConfigs);
+        return {
+          ...chain,
+          processIds,
+        };
+      }) ?? [],
+    [data],
+  );
   const i18n = useIntl();
   const operator = (
     type: 'start' | 'stop' | 'restart',
@@ -53,6 +73,12 @@ export default function ProcessChainList() {
       },
     );
 
+  const { data: processesInfo } = useAppSwr<{
+    [processesId: number]: LogInfo;
+  }>(`${processesApiBase}/runningInfos`, {
+    refreshInterval: 2000,
+  });
+
   return (
     <MainWrapper>
       <div className="flex justify-center items-center h-8 ">
@@ -66,11 +92,33 @@ export default function ProcessChainList() {
         </Tooltip>
       </div>
       <Table
+        className="overflow-y-auto"
         pagination={false}
         loading={isLoading}
         rowKey="id"
-        dataSource={data}
+        dataSource={processChains}
         expandable={{
+          expandedRowKeys: searchParams
+            .get('expandIds')
+            ?.split(',')
+            .map(Number),
+          onExpand: (expanded, record) => {
+            const newSearchParams = new URLSearchParams(searchParams);
+            const ids =
+              newSearchParams
+                .get('expandIds')
+                ?.split(',')
+                ?.filter(Boolean)
+                ?.map(Number) ?? [];
+            if (expanded) {
+              ids?.push(record.id);
+            } else {
+              ids?.splice(ids.indexOf(record.id), 1);
+            }
+            const newExpandIds = ids?.join(',') ?? '';
+            newSearchParams.set('expandIds', newExpandIds);
+            setSearchParams(newSearchParams);
+          },
           expandedRowRender(record: ProcessChainResponse) {
             const processIds: number[] = [];
             const getProcessId = (
@@ -110,6 +158,11 @@ export default function ProcessChainList() {
                 `}
               >
                 {name}
+                <RunningTag
+                  running={record.processIds?.some(
+                    (id) => processesInfo?.[id]?.running,
+                  )}
+                />
                 <Tooltip
                   title={intl.formatMessage({
                     id: 'StartService',
@@ -117,6 +170,9 @@ export default function ProcessChainList() {
                   })}
                 >
                   <Button
+                    disabled={record.processIds?.every(
+                      (id) => processesInfo?.[id]?.running,
+                    )}
                     type="text"
                     onClick={() => {
                       operator('start', record.id);
@@ -134,6 +190,9 @@ export default function ProcessChainList() {
                 >
                   <Button
                     type="text"
+                    disabled={record.processIds?.every(
+                      (id) => !processesInfo?.[id]?.running,
+                    )}
                     onClick={() => {
                       operator('stop', record.id);
                     }}

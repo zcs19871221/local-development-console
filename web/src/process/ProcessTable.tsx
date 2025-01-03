@@ -35,6 +35,33 @@ const operator = (type: 'start' | 'stop' | 'restart', processesId: number) =>
     );
   });
 
+export const RunningTag = ({
+  running,
+  onClick,
+}: {
+  running?: boolean;
+  onClick?: () => void;
+}) => {
+  const intl = useIntl();
+  return (
+    <Tag
+      bordered={false}
+      color={running ? 'gold' : 'grey'}
+      className="flex items-center cursor-pointer"
+      onClick={() => onClick?.()}
+    >
+      {running
+        ? intl.formatMessage({
+            id: 'Running',
+            defaultMessage: '运行中',
+          })
+        : intl.formatMessage({
+            id: 'NotRunning',
+            defaultMessage: '未运行',
+          })}
+    </Tag>
+  );
+};
 const Status = ({
   logInfo,
   process,
@@ -60,27 +87,13 @@ const Status = ({
     <div>
       <div className="flex space-x-2 items-center">
         <div>{processesName ?? ''}</div>
-        <Tag
-          bordered={false}
-          color={logInfo?.running ? 'gold' : 'grey'}
-          className="flex align-middle cursor-pointer"
-          onClick={onClick}
-        >
-          {logInfo?.running
-            ? intl.formatMessage({
-                id: 'Running',
-                defaultMessage: '运行中',
-              })
-            : intl.formatMessage({
-                id: 'NotRunning',
-                defaultMessage: '未运行',
-              })}
-        </Tag>
+
+        <RunningTag running={logInfo?.running} onClick={onClick} />
         {logInfo?.running && (
           <Tag
             bordered={false}
             color={logInfo?.logStatus?.labelColor}
-            className="flex align-middle cursor-pointer"
+            className="flex items-center cursor-pointer"
             onClick={onClick}
           >
             {logInfo?.logStatus?.label}
@@ -201,12 +214,18 @@ export default function ProcessTable({
   processes,
   isLoading,
   operatorColumn,
-  onRunningInfoMessage,
+  onReceiveRunningInfo,
 }: {
   processes?: Process[];
   isLoading: boolean;
   operatorColumn?: ColumnsType<Process> extends (infer U)[] ? U : unknown;
-  onRunningInfoMessage?: (data: unknown) => void;
+  onReceiveRunningInfo?: (
+    data:
+      | {
+          [processesId: number]: LogInfo;
+        }
+      | undefined,
+  ) => void;
 }) {
   const intl = useIntl();
 
@@ -214,7 +233,7 @@ export default function ProcessTable({
     [processesId: number]: LogInfo;
   }>(`${processesApiBase}/runningInfos`, {
     refreshInterval: 2000,
-    onSuccess: (data) => onRunningInfoMessage?.(data),
+    onSuccess: () => onReceiveRunningInfo?.(processesInfo),
   });
 
   const [processId, setProcessId] = useState<number | null>(null);
@@ -366,7 +385,7 @@ export default function ProcessTable({
         onCancel={() => setProcessId(null)}
         footer={null}
         title={
-          <div className="space-x-5 flex align-middle">
+          <div className="space-x-5 flex items-center">
             {processId !== null && (
               <Status
                 logInfo={processesInfo?.[processId]}

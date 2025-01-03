@@ -15,6 +15,7 @@ export interface ProcessChainConfigResponse extends IdAndVersion {
 export interface ProcessChainResponse extends IdAndVersion {
   name: string;
   processChainConfigs?: ProcessChainConfigResponse[];
+  processIds?: number[];
 }
 
 export type ProcessChainCreateOrUpdateRequest = MakeTypeOptionalRecursively<

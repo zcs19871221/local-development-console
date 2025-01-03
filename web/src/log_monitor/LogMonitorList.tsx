@@ -13,6 +13,7 @@ import { useAppSwr, jsonFetcher } from '../common/fetcher.tsx';
 import { logMonitorBaseUrl, LogMonitor, LogStatus } from './types.ts';
 
 import MainWrapper from '../common/MainWrapper.tsx';
+import useGetAntdTbodyHeight from '../common/useGetAntdTbodyHeight.ts';
 
 export const logStatusColumn = () => [
   {
@@ -45,14 +46,17 @@ export const LogMonitorTable = ({
 }) => {
   const intl = useIntl();
   const navigate = useNavigate();
-
+  const { recalculate, scroll, tableDomRef } = useGetAntdTbodyHeight(20);
   return (
     <Table
+      ref={tableDomRef}
       rowKey="id"
       dataSource={data}
       loading={isLoading}
       pagination={false}
+      scroll={scroll}
       expandable={{
+        onExpand: () => recalculate(),
         expandedRowRender(record: LogMonitor) {
           return (
             <Table

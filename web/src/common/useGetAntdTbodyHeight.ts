@@ -1,18 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { Table } from 'antd';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-const useGetAntdTableOffsetTop = (disable: boolean = false) => {
+const useGetAntdTbodyHeight = (tableToBottom: number) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tableDomRef = useRef<any>(null);
 
   const [tbodyOffsetTop, setTBodyOffsetTop] = useState<number>(0);
-
+  const [recalculateFlag, setRecalculateFlag] = useState(0);
   useEffect(() => {
     let timer: number | undefined;
 
     const getPosition = (num: number) => {
-      if (disable) {
-        return;
-      }
       if (!tableDomRef.current) {
         return;
       }
@@ -39,9 +37,20 @@ const useGetAntdTableOffsetTop = (disable: boolean = false) => {
     getPosition(4);
 
     return () => clearTimeout(timer);
-  }, [disable, tableDomRef]);
+  }, [tableDomRef, recalculateFlag]);
 
-  return { tbodyOffsetTop, tableDomRef };
+  console.log(tbodyOffsetTop);
+  const scroll: React.ComponentProps<typeof Table>['scroll'] = useMemo(
+    () => ({
+      y: window.innerHeight - tbodyOffsetTop - tableToBottom,
+    }),
+    [tableToBottom, tbodyOffsetTop],
+  );
+  return {
+    scroll,
+    tableDomRef,
+    recalculate: () => setRecalculateFlag((prev) => prev + 1),
+  };
 };
 
-export default useGetAntdTableOffsetTop;
+export default useGetAntdTbodyHeight;

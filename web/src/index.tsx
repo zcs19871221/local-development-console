@@ -54,6 +54,12 @@ export const App = () => {
       <ConfigProvider
         locale={{ locale }}
         theme={{
+          components: {
+            Layout: {
+              /* here is your component tokens */
+              headerHeight: 50,
+            },
+          },
           token: {
             // Seed Token
             colorPrimary: '#7939cb',
@@ -120,7 +126,7 @@ export const App = () => {
               />
             </Sider>
             <Layout>
-              <Content className="overflow-scroll">
+              <Content className="overflow-auto">
                 <Suspense fallback={<div>loading</div>}>
                   <Routes>
                     <Route path="/process" element={<Processes />} />
