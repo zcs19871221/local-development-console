@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -186,15 +187,15 @@ public class RunningProcess {
                 ".formatedLog").toString());
 
 
-        Files.writeString(processOutputLog.toPath(), "");
-        Files.writeString(formattedLog.toPath(), "");
+        Files.writeString(processOutputLog.toPath(), "", StandardCharsets.UTF_8);
+        Files.writeString(formattedLog.toPath(), "", StandardCharsets.UTF_8);
         LOGGER.debug("process output log file: " + processOutputLog);
         LOGGER.debug("process formated output log file: " + formattedLog);
         processBuilder.directory(new File(currentWorkingDirectory));
         processBuilder.redirectErrorStream(true);
         processBuilder.redirectOutput(processOutputLog);
         fileInputStream = new FileInputStream(processOutputLog);
-        br = new BufferedReader(new InputStreamReader(fileInputStream));
+        br = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
         systemProcess = processBuilder.start();
         running = true;
         LOGGER.info("execute command: {} at {}, pid is : {}", String.join(" ", commands),
@@ -214,7 +215,7 @@ public class RunningProcess {
     }
 
     public String readLog() throws Exception {
-        return Files.readString(formattedLog.toPath());
+        return Files.readString(formattedLog.toPath(), StandardCharsets.UTF_8);
     }
 
     public void clearLog() throws Exception {
@@ -224,7 +225,7 @@ public class RunningProcess {
 
         submitTask(() -> {
             try {
-                Files.writeString(formattedLog.toPath(), "");
+                Files.writeString(formattedLog.toPath(), "", StandardCharsets.UTF_8);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
