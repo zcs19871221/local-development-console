@@ -94,7 +94,7 @@ export default function ProcessChainDetail() {
           >
             <Checkbox />
           </Form.Item>
-          <Form.Item required label="子服务配置">
+          <Form.Item label="子服务配置">
             <Form.List name={[field.name, 'childProcessChainConfigs']}>
               {handleChildrenProcess}
             </Form.List>
@@ -104,7 +104,7 @@ export default function ProcessChainDetail() {
               remove(field.name);
             }}
           >
-            删除日志状态配置
+            删除子服务
           </Button>
         </Card>
       ))}

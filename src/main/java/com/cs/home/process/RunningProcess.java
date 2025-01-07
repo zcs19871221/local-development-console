@@ -98,9 +98,8 @@ public class RunningProcess {
 
     public void destory() throws IOException, InterruptedException {
         stop();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         br.close();
-
         Files.deleteIfExists(processOutputLog.toPath());
         Files.deleteIfExists(formattedLog.toPath());
     }

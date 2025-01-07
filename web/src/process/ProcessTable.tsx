@@ -38,14 +38,17 @@ const operator = (type: 'start' | 'stop' | 'restart', processesId: number) =>
 export const RunningTag = ({
   running,
   onClick,
+  style,
 }: {
   running?: boolean;
   onClick?: () => void;
+  style?: React.CSSProperties;
 }) => {
   const intl = useIntl();
   return (
     <Tag
       bordered={false}
+      style={style ?? {}}
       color={running ? 'gold' : 'grey'}
       className="flex items-center cursor-pointer"
       onClick={() => onClick?.()}

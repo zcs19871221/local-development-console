@@ -159,8 +159,9 @@ export default function ProcessChainList() {
               >
                 {name}
                 <RunningTag
-                  running={record.processIds?.some(
-                    (id) => processesInfo?.[id]?.running,
+                  style={{ marginLeft: '10px' }}
+                  running={record.processIds?.every(
+                    (id) => processesInfo?.[id] !== undefined,
                   )}
                 />
                 <Tooltip

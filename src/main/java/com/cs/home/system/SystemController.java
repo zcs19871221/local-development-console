@@ -38,13 +38,15 @@ public class SystemController {
     @PutMapping("/shutdown")
     Response<String> shutdown(Locale locale) throws Exception {
         HomeApplication.running = false;
-        processService.destroyAll();
         Runnable runnable = () -> {
             try {
-                Thread.sleep(5000);
+                processService.destroyAll();
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error("Thread was Interrupted! Error in Thread Sleep (5 " +
                         "Seconds!)", e);
+            } catch (Exception e) {
+                log.error("error on destroy process", e);
             }
             HomeApplication.applicationContext.close();
             log.info("system shutdown at {}",
