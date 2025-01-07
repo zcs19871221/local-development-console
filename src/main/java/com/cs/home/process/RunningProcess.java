@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class RunningProcess {
-    public static final AtomicBoolean isRunningThread = new AtomicBoolean(false);
+    public static final AtomicBoolean IS_DAEMON_QUEUE_THREAD_RUNNING = new AtomicBoolean(false);
     private static final String DIRECTORY_NAME_OR_FILE_NAME_REGEXP = "[^\\s\\n\\\\/:*?\"<>|]+";
     private static final Pattern PATH_PATTERN =
             Pattern.compile("(^|[\\s\\n(']+)((?:[a-z]:)?([/\\\\]+)(?:"
@@ -40,11 +40,11 @@ public class RunningProcess {
             "code", ".cmd"
     );
     private static Thread daemonQueue = new Thread(RunningProcess::processQueue);
+    private final AtomicBoolean isThreadRunning = new AtomicBoolean(false);
     private BufferedReader br;
     private FileInputStream fileInputStream;
     private LogStatusResponse logStatus = null;
     private Integer processId;
-    private boolean running = false;
     private java.lang.Process systemProcess;
     private ProcessBuilder processBuilder;
     private List<LogStatusResponse> logStatuses;
@@ -66,12 +66,12 @@ public class RunningProcess {
 
     public static void startDaemon() {
         LOGGER.info("start daemon queue");
-        isRunningThread.set(true);
+        IS_DAEMON_QUEUE_THREAD_RUNNING.set(true);
         daemonQueue.start();
     }
 
     private static void processQueue() {
-        while (isRunningThread.get()) {
+        while (IS_DAEMON_QUEUE_THREAD_RUNNING.get()) {
             try {
                 // Take the next task from the queue
                 Runnable task = taskQueue.take();
@@ -83,7 +83,7 @@ public class RunningProcess {
     }
 
     public static void stopDaemonQueue() {
-        isRunningThread.set(false);
+        IS_DAEMON_QUEUE_THREAD_RUNNING.set(false);
     }
 
     private static void submitTask(Runnable task) {
@@ -128,6 +128,9 @@ public class RunningProcess {
     }
 
     public void doSetStatusAndHighlightLog() throws Exception {
+        if (!isThreadRunning.get()) {
+            return;
+        }
         String incrementalLog;
         StringBuilder log = new StringBuilder();
         while ((incrementalLog = br.readLine()) != null) {
@@ -173,7 +176,7 @@ public class RunningProcess {
 
 
     public void start() throws IOException {
-        if (isRunning()) {
+        if (isThreadRunning.get()) {
             return;
         }
 
@@ -196,13 +199,13 @@ public class RunningProcess {
         fileInputStream = new FileInputStream(processOutputLog);
         br = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
         systemProcess = processBuilder.start();
-        running = true;
+        isThreadRunning.set(true);
         LOGGER.info("execute command: {} at {}, pid is : {}", String.join(" ", commands),
                 currentWorkingDirectory, systemProcess.pid());
     }
 
     public void stop() throws IOException {
-        running = false;
+        isThreadRunning.set(false);
         if (systemProcess != null && systemProcess.isAlive()) {
             systemProcess.descendants().forEach(ProcessHandle::destroy);
             systemProcess.destroy();
