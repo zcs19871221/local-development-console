@@ -35,4 +35,8 @@ You can configure multiple processes together to form a tree structure, which I 
 
 3. visit *http://localhost:9981/*
 
+## Program structure
+Frontend: vite + React
+Backedn: java  + spring boot2
+
 
