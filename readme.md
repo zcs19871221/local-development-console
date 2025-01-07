@@ -10,7 +10,7 @@ It's also hard to find the error and useful information in cmd terminal, and the
 And if you need to open multiple services at the same time, you have to open a lot of cmd terminals and it
 will make you confused about which one is which, and it's a mess.
 
-So this program help you control these processes (and not only nodeJs process),
+So this program help you control these processes (not only nodeJs process but any process you like),
 and you can easily manage your process on the browser without opening any cmd terminals.
 
 ## Features
