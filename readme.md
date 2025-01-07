@@ -4,59 +4,35 @@
 
 The front-end node service is based on cmd. You need to spend a lot of time to
 remember the command, open cmd, and input you command and enter. You can't
-restart it, you can only close it and reopen it.
+restart it, you can only shutdown it and start it again.
 
-It's hard to find the error and info in logs, and they disappear after closing.
-And if you need to open multiple services at the same time, a lot of cmd panels
+It's also hard to find the error and useful information in cmd terminal, and the log will disappear after closing the terminal.
+And if you need to open multiple services at the same time, you have to open a lot of cmd terminals and it
 will make you confused about which one is which, and it's a mess.
 
-So this console controls these processes through the background java service,
-and you can easily control them on the browser without opening many cmd panels.
-And It provides many conveniences such as calling Vscode to locate errors, open
-folders, etc.
+So this program help you control these processes (and not only nodeJs process),
+and you can easily manage your process on the browser without opening any cmd terminals.
 
-## Intro
+## Features
 
-You can use the Console to manage your local services or commands. It is mainly
-for front-end Node.js services, but it can support any service or command that
-can be started through the cli.
+### Start/Stop/Restart your processes in ui with one click
+you could configurate with name, directory, how to analyze the log, etc.
+### Highlight error messages in live log text
+You can configure which text to capture and the color in the log, and also you could quick jump to the error position in the log text.
+### Quick open/jump with vscode IDE
+1. Open the project address through vscode
+2. Open the text in the log that can be identified as a path through vscode
+### Group the process 
+You can configure multiple processes together to form a tree structure, which I call a process chain. You can quickly start, close, and restart the process chain to quickly manage multiple processes.
 
-Through the console, you can easily control your lots of service and view the
-logs easily without open lots of cmd window and search the logs.
-
-After adding your service, you can perform operations on this service,
-including: start, stop, restart, view logs, open the service directory through
-Vscode, highlight log errors, locate error addresses through Vscode, and display
-service status in real time by configuring log status monitoring.
-
-## how to use
+## How to use
 
 1. download app from this **[link](https://github.com/zcs19871221/local-development-console/actions/runs/12647816132/artifacts/2394422746)**.
 
 2. double click run.bat (currently only support windows if you need linux or mac
-   version, please create issue). You can close this cmd console, the Console
+   version, please create issue or contact me). You can close this cmd console, the Console
    still running in background.
 
 3. visit *http://localhost:9981/*
 
-# Feature
 
-1. In the [Service] menu, you can create/edit/delete services through the add
-   icon in the right top and edit/delete icon in the operation column.
-
-2. In the [Service] menu, you can click the icon in the description column to
-   perform the following operations on the service you configured:
-   start/stop/restart/view logs/clear logs/open directory with vscode.
-
-3. In the [Log status] menu, you can add/edit/del the log status and associate
-   them in the [Service] menu. After association, when the log matches the
-   matching rule you configured, the label name and color you configured will be
-   displayed in the service menu description column to show the current service
-   status.
-
-4. You can stop the backend service by clicking the [Shutdown system] button in
-   the right top.
-
-5. You can change the language by clicking the selection in the right top.
-   It also based on my another
-   Tools: [automatic-i18n](https://www.npmjs.com/package/automatic-i18n)
