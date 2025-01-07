@@ -160,9 +160,12 @@ export default function ProcessChainList() {
                 {name}
                 <RunningTag
                   style={{ marginLeft: '10px' }}
-                  running={record.processIds?.every(
-                    (id) => processesInfo?.[id] !== undefined,
-                  )}
+                  running={
+                    Object.keys(processesInfo ?? {})
+                      .sort()
+                      .join(',') ===
+                    [...(record.processIds ?? [])].sort().join(',')
+                  }
                 />
                 <Tooltip
                   title={intl.formatMessage({
