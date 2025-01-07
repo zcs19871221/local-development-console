@@ -70,6 +70,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         RunningProcess runningProcess = idMapProcess.get(processId);
         runningProcess.stop();
+        idMapProcess.remove(processId);
     }
 
     @Override

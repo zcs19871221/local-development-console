@@ -146,83 +146,92 @@ export default function ProcessChainList() {
           {
             title: '名称',
             dataIndex: 'name',
-            render: (name: string, record: ProcessChainResponse) => (
-              <div
-                className={css`
-                  display: flex;
-                  align-items: center;
-                  button {
+            render: (name: string, record: ProcessChainResponse) => {
+              const isProcessChainRunning =
+                Object.keys(processesInfo ?? {})
+                  .sort()
+                  .join(',') ===
+                [...(record.processIds ?? [])].sort().join(',');
+
+              return (
+                <div
+                  className={css`
                     display: flex;
                     align-items: center;
-                  }
-                `}
-              >
-                {name}
-                <RunningTag
-                  style={{ marginLeft: '10px' }}
-                  running={
-                    Object.keys(processesInfo ?? {})
-                      .sort()
-                      .join(',') ===
-                    [...(record.processIds ?? [])].sort().join(',')
-                  }
-                />
-                <Tooltip
-                  title={intl.formatMessage({
-                    id: 'StartService',
-                    defaultMessage: '启动服务',
-                  })}
+                    button {
+                      display: flex;
+                      align-items: center;
+                    }
+                  `}
                 >
-                  <Button
-                    disabled={record.processIds?.every(
-                      (id) => processesInfo?.[id]?.running,
-                    )}
-                    type="text"
-                    onClick={() => {
-                      operator('start', record.id);
-                    }}
-                    className="text-green-600 cursor-pointer"
+                  {name}
+                  <RunningTag
+                    style={{ marginLeft: '10px' }}
+                    running={isProcessChainRunning}
+                  />
+                  <Tooltip
+                    title={intl.formatMessage({
+                      id: 'StartService',
+                      defaultMessage: '启动服务',
+                    })}
                   >
-                    <CaretRightOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip
-                  title={intl.formatMessage({
-                    id: 'StopService',
-                    defaultMessage: '关闭服务',
-                  })}
-                >
-                  <Button
-                    type="text"
-                    disabled={record.processIds?.every(
-                      (id) => !processesInfo?.[id]?.running,
-                    )}
-                    onClick={() => {
-                      operator('stop', record.id);
-                    }}
-                    className="text-red-500 cursor-pointer"
+                    <Button
+                      disabled={
+                        isProcessChainRunning &&
+                        record.processIds?.every(
+                          (id) => processesInfo?.[id]?.running,
+                        )
+                      }
+                      type="text"
+                      onClick={() => {
+                        operator('start', record.id);
+                      }}
+                      className="text-green-600 cursor-pointer"
+                    >
+                      <CaretRightOutlined />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip
+                    title={intl.formatMessage({
+                      id: 'StopService',
+                      defaultMessage: '关闭服务',
+                    })}
                   >
-                    <BorderOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip
-                  title={intl.formatMessage({
-                    id: 'RestartService',
-                    defaultMessage: '重启服务',
-                  })}
-                >
-                  <Button
-                    type="text"
-                    onClick={() => {
-                      operator('restart', record.id);
-                    }}
-                    className="text-green-600 cursor-pointer"
+                    <Button
+                      type="text"
+                      disabled={
+                        !isProcessChainRunning ||
+                        record.processIds?.every(
+                          (id) => !processesInfo?.[id]?.running,
+                        )
+                      }
+                      onClick={() => {
+                        operator('stop', record.id);
+                      }}
+                      className="text-red-500 cursor-pointer"
+                    >
+                      <BorderOutlined />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip
+                    title={intl.formatMessage({
+                      id: 'RestartService',
+                      defaultMessage: '重启服务',
+                    })}
                   >
-                    <RedoOutlined />
-                  </Button>
-                </Tooltip>
-              </div>
-            ),
+                    <Button
+                      type="text"
+                      onClick={() => {
+                        operator('restart', record.id);
+                      }}
+                      className="text-green-600 cursor-pointer"
+                    >
+                      <RedoOutlined />
+                    </Button>
+                  </Tooltip>
+                </div>
+              );
+            },
           },
           {
             title: '服务依赖关系树',
