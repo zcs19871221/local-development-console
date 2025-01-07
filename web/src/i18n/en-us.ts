@@ -3,7 +3,6 @@
  * You can only change variable's property and value.
  * Others will be clear after rerun automatic-i18n program.
  */
-// eslint-disable-next-line import/extensions
 import { LocalKey } from './types';
 
 const locale: Record<LocalKey, string> = {
@@ -67,6 +66,45 @@ const locale: Record<LocalKey, string> = {
   Success: 'Success',
   Unknown: 'Unknown',
   ViewLog: 'View log',
+  key0001: 'Cancel',
+  key0002: 'Copy',
+  key0003: 'Confirm',
+  key0006: 'Log Monitoring',
+  key0007: 'Service Chain',
+  key0008: 'Edit Log Monitoring - {v1}',
+  key0009: 'Create New Log Monitoring',
+  key0010: 'Please enter a name',
+  key0011: 'Add at least one log status',
+  key0012: 'Please enter a tag name',
+  key0013: 'Please enter a color',
+  key0014: 'Matching rule group',
+  key0015: 'Please enter a matching rule',
+  key0016: 'Delete matching rule',
+  key0017: 'Add matching rule',
+  key0018: 'Is it an incorrect match',
+  key0019: 'Add log status configuration',
+  key0020: 'Tag',
+  key0021: 'Is it an error state',
+  key0022: 'Yes',
+  key0023: 'No',
+  key0024: 'Log monitoring configuration',
+  key0025: 'Submit',
+  key0026: 'Please select a service',
+  key0027: 'Wait for milliseconds to start',
+  key0028: 'Wait for the parent service to end before starting',
+  key0029: 'Subservice configuration',
+  key0030: 'Delete subservice',
+  key0031: 'Add subservice',
+  key0032: 'Edit service chain - {v1}',
+  key0033: 'Create a new service chain',
+  key0034: 'Service chain name',
+  key0035: 'Please enter the service chain name',
+  key0036: 'Service configuration',
+  key0037: 'Service chain list',
+  key0038: 'Add service chain',
+  key0039: 'Service dependency tree',
+  key0040: 'Edit service chain',
+  key0041: 'Delete service chain',
   vCommandHasBeenSent: '{v1} command has been sent',
 };
 

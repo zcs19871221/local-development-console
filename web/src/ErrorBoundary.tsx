@@ -1,7 +1,6 @@
 import Button from 'antd/es/button';
 import { Component } from 'react';
 
-
 interface State {
   readonly error: Error | null;
   readonly href: string | null;
@@ -13,7 +12,7 @@ export class ErrorBoundary extends Component<
 > {
   readonly state: State = {
     error: null,
-    href: null
+    href: null,
   };
 
   componentDidMount() {
@@ -65,14 +64,10 @@ export class ErrorBoundary extends Component<
     }
 
     return (
-      <div >
-        <h1>
-            报错了
-        </h1>
+      <div>
+        <h1>报错了</h1>
         <p>{this.state.error.message}</p>
-        <Button onClick={() => this.resetState()}>
-          请重试
-        </Button>
+        <Button onClick={() => this.resetState()}>请重试</Button>
       </div>
     );
   }

@@ -73,7 +73,10 @@ export const App = () => {
             <div>
               <AppFormattedMessage
                 id="FrontendManagementSystem"
-                defaultMessage="前端管理系统"
+                defaultMessage={intl.formatMessage({
+                  id: 'FrontendManagementSystem',
+                  defaultMessage: '前端管理系统',
+                })}
               />
             </div>
             <div
@@ -86,13 +89,22 @@ export const App = () => {
             >
               <AppFormattedMessage
                 id="ShutdownSystem"
-                defaultMessage="关闭系统"
+                defaultMessage={intl.formatMessage({
+                  id: 'ShutdownSystem',
+                  defaultMessage: '关闭系统',
+                })}
               />
             </div>
             <Select onChange={setLocale} value={locale} className="ml-5 w-28">
               <Option value="en-us">English</Option>
               <Option value="zh-cn">
-                <AppFormattedMessage id="Chinese" defaultMessage="中文" />
+                <AppFormattedMessage
+                  id="Chinese"
+                  defaultMessage={intl.formatMessage({
+                    id: 'Chinese',
+                    defaultMessage: '中文',
+                  })}
+                />
               </Option>
             </Select>
           </Header>
@@ -114,12 +126,18 @@ export const App = () => {
                   },
                   {
                     key: 'logMonitor',
-                    label: '日志监控',
+                    label: intl.formatMessage({
+                      id: 'key0006',
+                      defaultMessage: '日志监控',
+                    }),
                     icon: <CloudServerOutlined />,
                   },
                   {
                     key: 'processChain',
-                    label: '服务链',
+                    label: intl.formatMessage({
+                      id: 'key0007',
+                      defaultMessage: '服务链',
+                    }),
                     icon: <CloudServerOutlined />,
                   },
                 ]}
@@ -156,5 +174,5 @@ createRoot(document.getElementById('root')!).render(
         </LocaleProvider>
       </BrowserRouter>
     </ErrorBoundary>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

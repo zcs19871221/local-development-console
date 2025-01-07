@@ -1,4 +1,4 @@
-import { useIntl } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { Modal, Table, Tooltip, message } from 'antd';
 import {
   EditOutlined,
@@ -14,24 +14,43 @@ import { logMonitorBaseUrl, LogMonitor, LogStatus } from './types.ts';
 
 import MainWrapper from '../common/MainWrapper.tsx';
 import useGetAntdTbodyHeight from '../common/useGetAntdTbodyHeight.ts';
+import { i18n } from '../i18n/index.tsx';
 
 export const logStatusColumn = () => [
   {
     dataIndex: 'label',
-    title: '标签',
+    title: i18n.intl.formatMessage({
+      id: 'key0020',
+      defaultMessage: '标签',
+    }),
     render: (label: string, r: LogStatus) => (
       <span style={{ color: r.labelColor }}>{label}</span>
     ),
   },
   {
     dataIndex: 'logMatchPatterns',
-    title: '匹配规则',
+    title: i18n.intl.formatMessage({
+      id: 'MatchingRule',
+      defaultMessage: '匹配规则',
+    }),
     render: (values: string[]) => values.map((v) => <div>{v}</div>),
   },
   {
     dataIndex: 'isErrorStatus',
-    title: '是否错误状态',
-    render: (val: boolean) => (val ? '是' : '否'),
+    title: i18n.intl.formatMessage({
+      id: 'key0021',
+      defaultMessage: '是否错误状态',
+    }),
+    render: (val: boolean) =>
+      val
+        ? i18n.intl.formatMessage({
+            id: 'key0022',
+            defaultMessage: '是',
+          })
+        : i18n.intl.formatMessage({
+            id: 'key0023',
+            defaultMessage: '否',
+          }),
   },
 ];
 
@@ -72,7 +91,10 @@ export const LogMonitorTable = ({
       columns={
         [
           {
-            title: '名称',
+            title: intl.formatMessage({
+              id: 'Name',
+              defaultMessage: '名称',
+            }),
             dataIndex: 'name',
           },
           mutate && {
@@ -111,13 +133,13 @@ export const LogMonitorTable = ({
                         onOk() {
                           jsonFetcher(
                             `${logMonitorBaseUrl}/${row.id}`,
-                            'DELETE',
+                            'DELETE'
                           ).then(() => {
                             message.success(
                               intl.formatMessage({
                                 id: 'DeletedSuccessfully',
                                 defaultMessage: '删除成功',
-                              }),
+                              })
                             );
                             mutate?.();
                           });
@@ -145,7 +167,9 @@ export default function LogMonitorList() {
   return (
     <MainWrapper>
       <div className="flex justify-center items-center h-8 ">
-        <h2 className="mr-auto">日志监控配置</h2>
+        <h2 className="mr-auto">
+          <FormattedMessage id="key0024" defaultMessage="日志监控配置" />
+        </h2>
         <Tooltip
           title={intl.formatMessage({
             id: 'AddLogStatus',

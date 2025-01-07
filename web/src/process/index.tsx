@@ -1,4 +1,4 @@
-import { useIntl } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import {
   AutoComplete,
   Button,
@@ -57,13 +57,13 @@ export default function ProcessesComponent() {
     path
       ? `${base}/system/read?path=${encodeURIComponent(`${path}/package.json`)}`
       : undefined,
-    bufferFetcher,
+    bufferFetcher
   );
 
   const { data: logMonitors } = useAppSwr<LogMonitor[]>(logMonitorBaseUrl);
 
   const { data: paths } = useAppSwr<string[]>(
-    `${processesApiBase}/distinctProcessPaths`,
+    `${processesApiBase}/distinctProcessPaths`
   );
 
   const isCopyingRef = useRef(false);
@@ -74,7 +74,10 @@ export default function ProcessesComponent() {
         <h2 className="mr-auto">
           <AppFormattedMessage
             id="ServiceManagement"
-            defaultMessage="服务管理"
+            defaultMessage={intl.formatMessage({
+              id: 'ServiceManagement',
+              defaultMessage: '服务管理',
+            })}
           />
         </h2>
         <Tooltip
@@ -123,13 +126,13 @@ export default function ProcessesComponent() {
                       onOk() {
                         jsonFetcher(
                           `${processesApiBase}/${processesRecord.id}`,
-                          'DELETE',
+                          'DELETE'
                         ).then(() => {
                           message.success(
                             i18n.intl.formatMessage({
                               id: 'DeletedSuccessfully',
                               defaultMessage: '删除成功',
-                            }),
+                            })
                           );
                           refreshProcesses();
                         });
@@ -180,7 +183,9 @@ export default function ProcessesComponent() {
         onCancel={() => setShowProcessesForm(false)}
         destroyOnClose
         footer={[
-          <Button onClick={() => setShowProcessesForm(false)}>取消</Button>,
+          <Button onClick={() => setShowProcessesForm(false)}>
+            <FormattedMessage id="key0001" defaultMessage="取消" />
+          </Button>,
           <Button
             onClick={() => {
               isCopyingRef.current = true;
@@ -189,10 +194,10 @@ export default function ProcessesComponent() {
             variant="outlined"
             htmlType="submit"
           >
-            复制
+            <FormattedMessage id="key0002" defaultMessage="复制" />
           </Button>,
           <Button htmlType="submit" type="primary">
-            提交
+            <FormattedMessage id="key0025" defaultMessage="提交" />
           </Button>,
         ]}
         modalRender={(dom) => (
@@ -214,13 +219,13 @@ export default function ProcessesComponent() {
                 {
                   ...values,
                   id,
-                },
+                }
               ).then(() => {
                 message.success(
                   intl.formatMessage({
                     id: 'OperationSuccessful',
                     defaultMessage: '操作成功',
-                  }),
+                  })
                 );
                 refreshProcesses();
                 setShowProcessesForm(false);
@@ -284,7 +289,7 @@ export default function ProcessesComponent() {
                       });
                       return commands;
                     },
-                    [] as DefaultOptionType[],
+                    [] as DefaultOptionType[]
                   )
                 : []
             }
@@ -301,7 +306,13 @@ export default function ProcessesComponent() {
           <Input />
         </Form.Item>
 
-        <Form.Item name="logMonitorId" label="日志监控">
+        <Form.Item
+          name="logMonitorId"
+          label={intl.formatMessage({
+            id: 'key0006',
+            defaultMessage: '日志监控',
+          })}
+        >
           <Select
             allowClear
             options={logMonitors?.map((status) => ({

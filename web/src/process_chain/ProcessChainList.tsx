@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useIntl } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { css } from '@linaria/core';
 import { useMemo } from 'react';
 import MainWrapper from '../common/MainWrapper.tsx';
@@ -49,12 +49,12 @@ export default function ProcessChainList() {
           processIds,
         };
       }) ?? [],
-    [data],
+    [data]
   );
   const i18n = useIntl();
   const operator = (
     type: 'start' | 'stop' | 'restart',
-    processChainId: number,
+    processChainId: number
   ) =>
     jsonFetcher(`${processChainApiBase}/${processChainId}/${type}`, 'PUT').then(
       () => {
@@ -67,10 +67,10 @@ export default function ProcessChainList() {
                 defaultMessage: '{v1}指令已发送',
               }),
             },
-            { v1: type },
-          ),
+            { v1: type }
+          )
         );
-      },
+      }
     );
 
   const { data: processesInfo } = useAppSwr<{
@@ -82,8 +82,16 @@ export default function ProcessChainList() {
   return (
     <MainWrapper>
       <div className="flex justify-center items-center h-8 ">
-        <h2 className="mr-auto">服务链列表</h2>
-        <Tooltip title="增加服务链" placement="leftBottom">
+        <h2 className="mr-auto">
+          <FormattedMessage id="key0037" defaultMessage="服务链列表" />
+        </h2>
+        <Tooltip
+          title={intl.formatMessage({
+            id: 'key0038',
+            defaultMessage: '增加服务链',
+          })}
+          placement="leftBottom"
+        >
           <FileAddOutlined
             onClick={() => {
               navigate('new');
@@ -122,7 +130,7 @@ export default function ProcessChainList() {
           expandedRowRender(record: ProcessChainResponse) {
             const processIds: number[] = [];
             const getProcessId = (
-              chainConfigs?: ProcessChainConfigResponse[],
+              chainConfigs?: ProcessChainConfigResponse[]
             ) => {
               chainConfigs?.forEach((chainConfig) => {
                 processIds.push(chainConfig.processId);
@@ -135,7 +143,7 @@ export default function ProcessChainList() {
               <ProcessTable
                 isLoading={loadingProcesses}
                 processes={processes?.filter((process) =>
-                  processIds?.includes(process.id),
+                  processIds?.includes(process.id)
                 )}
               />
             );
@@ -144,7 +152,10 @@ export default function ProcessChainList() {
         }}
         columns={[
           {
-            title: '名称',
+            title: intl.formatMessage({
+              id: 'Name',
+              defaultMessage: '名称',
+            }),
             dataIndex: 'name',
             render: (name: string, record: ProcessChainResponse) => {
               const isProcessChainRunning =
@@ -179,7 +190,7 @@ export default function ProcessChainList() {
                       disabled={
                         isProcessChainRunning &&
                         record.processIds?.every(
-                          (id) => processesInfo?.[id]?.running,
+                          (id) => processesInfo?.[id]?.running
                         )
                       }
                       type="text"
@@ -202,7 +213,7 @@ export default function ProcessChainList() {
                       disabled={
                         !isProcessChainRunning ||
                         record.processIds?.every(
-                          (id) => !processesInfo?.[id]?.running,
+                          (id) => !processesInfo?.[id]?.running
                         )
                       }
                       onClick={() => {
@@ -234,23 +245,26 @@ export default function ProcessChainList() {
             },
           },
           {
-            title: '服务依赖关系树',
+            title: intl.formatMessage({
+              id: 'key0039',
+              defaultMessage: '服务依赖关系树',
+            }),
             render: (_, record: ProcessChainResponse) => {
               const getPath = (
                 processChainConfigs: ProcessChainConfigResponse[],
-                level = 0,
+                level = 0
               ) => {
                 let path = '';
                 processChainConfigs?.forEach((config) => {
                   path +=
                     `\n${'--'.repeat(level)}${
                       processes?.find(
-                        (process) => process.id === config.processId,
+                        (process) => process.id === config.processId
                       )?.description
                     }` || '';
                   path += getPath(
                     config.childProcessChainConfigs ?? [],
-                    level + 1,
+                    level + 1
                   );
                 });
                 return path;
@@ -259,17 +273,30 @@ export default function ProcessChainList() {
             },
           },
           {
-            title: '操作',
+            title: intl.formatMessage({
+              id: 'Operation',
+              defaultMessage: '操作',
+            }),
             render: (_: unknown, row: ProcessChainResponse) => (
               <div className="space-x-5">
-                <Tooltip title="编辑服务链">
+                <Tooltip
+                  title={intl.formatMessage({
+                    id: 'key0040',
+                    defaultMessage: '编辑服务链',
+                  })}
+                >
                   <EditOutlined
                     onClick={() => {
                       navigate(`${row.id}`);
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="删除服务链">
+                <Tooltip
+                  title={intl.formatMessage({
+                    id: 'key0041',
+                    defaultMessage: '删除服务链',
+                  })}
+                >
                   <DeleteOutlined
                     onClick={() => {
                       Modal.confirm({
@@ -281,13 +308,13 @@ export default function ProcessChainList() {
                         onOk() {
                           jsonFetcher(
                             `${processChainApiBase}/${row.id}`,
-                            'DELETE',
+                            'DELETE'
                           ).then(() => {
                             message.success(
                               intl.formatMessage({
                                 id: 'DeletedSuccessfully',
                                 defaultMessage: '删除成功',
-                              }),
+                              })
                             );
                             mutate?.();
                           });

@@ -1,3 +1,4 @@
+import { FormattedMessage } from 'react-intl';
 import { Button, Layout } from 'antd';
 import { Content, Footer, Header } from 'antd/es/layout/layout';
 
@@ -22,7 +23,7 @@ export default function DetailLayout({
       </Content>
       <Footer className="space-x-5 flex h-12 shrink-0 grow-0 p-0 items-center pr-8 pl-4">
         <Button onClick={() => onCancel()} className="ml-auto">
-          取消
+          <FormattedMessage id="key0001" defaultMessage="取消" />
         </Button>
         {onCopy && (
           <Button
@@ -32,7 +33,7 @@ export default function DetailLayout({
               onCopy();
             }}
           >
-            复制
+            <FormattedMessage id="key0002" defaultMessage="复制" />
           </Button>
         )}
         <Button
@@ -41,7 +42,7 @@ export default function DetailLayout({
             onSubmit();
           }}
         >
-          确定
+          <FormattedMessage id="key0003" defaultMessage="确定" />
         </Button>
       </Footer>
     </Layout>

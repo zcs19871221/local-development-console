@@ -10,7 +10,7 @@ import {
   theme,
 } from 'antd';
 import { Color, ColorPickerProps } from 'antd/es/color-picker';
-import { useIntl } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { generate, green, presetPalettes, red, blue } from '@ant-design/colors';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLayoutEffect } from 'react';
@@ -37,7 +37,7 @@ export default function LogMonitorDetail() {
   const { token } = theme.useToken();
 
   const { data, isLoading } = useAppSwr<LogMonitor>(
-    logMonitorId ? `${logMonitorBaseUrl}/${logMonitorId}` : undefined,
+    logMonitorId ? `${logMonitorBaseUrl}/${logMonitorId}` : undefined
   );
 
   const presets = genPresets({
@@ -70,7 +70,7 @@ export default function LogMonitorDetail() {
             intl.formatMessage({
               id: 'OperationSuccessful',
               defaultMessage: '操作成功',
-            }),
+            })
           );
           navigate('..');
         });
@@ -79,7 +79,18 @@ export default function LogMonitorDetail() {
         navigate('../');
       }}
       title={
-        logMonitorId ? `编辑日志监控 - ${data?.name ?? ''}` : '新建日志监控'
+        logMonitorId
+          ? intl.formatMessage(
+              {
+                id: 'key0008',
+                defaultMessage: '编辑日志监控 - {v1}',
+              },
+              { v1: data?.name ?? '' }
+            )
+          : intl.formatMessage({
+              id: 'key0009',
+              defaultMessage: '新建日志监控',
+            })
       }
     >
       <Skeleton loading={isLoading}>
@@ -90,19 +101,40 @@ export default function LogMonitorDetail() {
               id: 'Name',
               defaultMessage: '名称',
             })}
-            rules={[{ required: true, message: '请输入名称' }]}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'key0010',
+                  defaultMessage: '请输入名称',
+                }),
+              },
+            ]}
             required
           >
             <Input />
           </Form.Item>
-          <Form.Item label="日志状态" required>
+          <Form.Item
+            label={intl.formatMessage({
+              id: 'LogStatus',
+              defaultMessage: '日志状态',
+            })}
+            required
+          >
             <Form.List
               name="statusConfigurations"
               rules={[
                 {
                   validator: async (_, configurations) => {
                     if (!configurations || configurations.length < 1) {
-                      return Promise.reject(new Error('至少添加一个日志状态'));
+                      return Promise.reject(
+                        new Error(
+                          intl.formatMessage({
+                            id: 'key0011',
+                            defaultMessage: '至少添加一个日志状态',
+                          })
+                        )
+                      );
                     }
                     return Promise.resolve();
                   },
@@ -119,7 +151,15 @@ export default function LogMonitorDetail() {
                           id: 'LabelName',
                           defaultMessage: '标签名',
                         })}
-                        rules={[{ required: true, message: '请输入标签名' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: intl.formatMessage({
+                              id: 'key0012',
+                              defaultMessage: '请输入标签名',
+                            }),
+                          },
+                        ]}
                       >
                         <Input />
                       </Form.Item>
@@ -133,18 +173,29 @@ export default function LogMonitorDetail() {
                         getValueFromEvent={(color: Color) =>
                           color.toHexString()
                         }
-                        rules={[{ required: true, message: '请输入颜色' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: intl.formatMessage({
+                              id: 'key0013',
+                              defaultMessage: '请输入颜色',
+                            }),
+                          },
+                        ]}
                       >
                         <ColorPicker presets={presets} />
                       </Form.Item>
-                      <Form.Item required label="匹配规则组">
+                      <Form.Item
+                        required
+                        label={intl.formatMessage({
+                          id: 'key0014',
+                          defaultMessage: '匹配规则组',
+                        })}
+                      >
                         <Form.List name={[field.name, 'logMatchPatterns']}>
                           {(
                             matcherPatternFields,
-                            {
-                              add: addMatchPattern,
-                              remove: removeMatchPattern,
-                            },
+                            { add: addMatchPattern, remove: removeMatchPattern }
                           ) => (
                             <div className="flex flex-col gap-3">
                               {matcherPatternFields.map(
@@ -160,7 +211,10 @@ export default function LogMonitorDetail() {
                                       rules={[
                                         {
                                           required: true,
-                                          message: '请输入匹配规则',
+                                          message: intl.formatMessage({
+                                            id: 'key0015',
+                                            defaultMessage: '请输入匹配规则',
+                                          }),
                                         },
                                       ]}
                                     >
@@ -169,17 +223,23 @@ export default function LogMonitorDetail() {
                                     <Button
                                       onClick={() => {
                                         removeMatchPattern(
-                                          matcherPatternField.name,
+                                          matcherPatternField.name
                                         );
                                       }}
                                     >
-                                      删除匹配规则
+                                      <FormattedMessage
+                                        id="key0016"
+                                        defaultMessage="删除匹配规则"
+                                      />
                                     </Button>
                                   </Card>
-                                ),
+                                )
                               )}
                               <Button onClick={() => addMatchPattern()} block>
-                                添加匹配规则
+                                <FormattedMessage
+                                  id="key0017"
+                                  defaultMessage="添加匹配规则"
+                                />
                               </Button>
                             </div>
                           )}
@@ -188,7 +248,10 @@ export default function LogMonitorDetail() {
 
                       <Form.Item
                         name={[field.name, 'isErrorStatus']}
-                        label="是否是错误匹配"
+                        label={intl.formatMessage({
+                          id: 'key0018',
+                          defaultMessage: '是否是错误匹配',
+                        })}
                         valuePropName="checked"
                       >
                         <Checkbox />
@@ -198,12 +261,18 @@ export default function LogMonitorDetail() {
                           remove(field.name);
                         }}
                       >
-                        删除日志状态配置
+                        <FormattedMessage
+                          id="DeleteLogStatusConfiguration"
+                          defaultMessage="删除日志状态配置"
+                        />
                       </Button>
                     </Card>
                   ))}
                   <Button onClick={() => add()} block>
-                    添加日志状态配置
+                    <FormattedMessage
+                      id="key0019"
+                      defaultMessage="添加日志状态配置"
+                    />
                   </Button>
                   <Form.ErrorList errors={errors} />
                 </div>
