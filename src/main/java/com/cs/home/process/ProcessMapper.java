@@ -3,10 +3,9 @@ package com.cs.home.process;
 import com.cs.home.log_monitor.LogMonitorMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mapper(nullValuePropertyMappingStrategy =
         NullValuePropertyMappingStrategy.IGNORE, uses =
@@ -20,4 +19,9 @@ public interface ProcessMapper {
     ProcessResponse map(Process process);
 
     RunningProcessResponse map(RunningProcess runningProcess);
+
+
+    default boolean map(AtomicBoolean running) {
+        return running.get();
+    }
 }

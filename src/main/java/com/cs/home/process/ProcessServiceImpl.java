@@ -42,7 +42,7 @@ public class ProcessServiceImpl implements ProcessService {
     public RunningProcess start(Integer processId) throws Exception {
         validProcessExists(processId);
         RunningProcess existsRunningProcess = idMapProcess.getOrDefault(processId, null);
-        if (existsRunningProcess != null && idMapProcess.get(processId).isRunning()) {
+        if (existsRunningProcess != null && idMapProcess.get(processId).getRunning().get()) {
             return null;
         }
         if (existsRunningProcess != null) {

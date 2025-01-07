@@ -40,7 +40,7 @@ public class RunningProcess {
             "code", ".cmd"
     );
     private static Thread daemonQueue = new Thread(RunningProcess::processQueue);
-    private final AtomicBoolean isThreadRunning = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
     private BufferedReader br;
     private FileInputStream fileInputStream;
     private LogStatusResponse logStatus = null;
@@ -128,7 +128,7 @@ public class RunningProcess {
     }
 
     public void doSetStatusAndHighlightLog() throws Exception {
-        if (!isThreadRunning.get()) {
+        if (!running.get()) {
             return;
         }
         String incrementalLog;
@@ -138,11 +138,11 @@ public class RunningProcess {
             int lastMatchedStart = -1;
             for (LogStatusResponse logStatus : logStatuses) {
                 Pattern statusPattern =
-                        Pattern.compile("([\\s\\n]+|^)(" +
+                        Pattern.compile("([\\s\\n'\"]+|^)(" +
                                         Arrays.stream(logStatus.getLogMatchPatterns()).
                                                 map(p -> "(?:" + Pattern.quote(p) + ")").
                                                 collect(Collectors.joining("|")) +
-                                        ")([\\s\\n]+|$)",
+                                        ")([\\s\\n'\"]+|$)",
                                 Pattern.CASE_INSENSITIVE);
                 Matcher matcher = statusPattern.matcher(incrementalLog);
                 Integer currentLastMatchedStart = null;
@@ -176,7 +176,7 @@ public class RunningProcess {
 
 
     public void start() throws IOException {
-        if (isThreadRunning.get()) {
+        if (running.get()) {
             return;
         }
 
@@ -199,13 +199,13 @@ public class RunningProcess {
         fileInputStream = new FileInputStream(processOutputLog);
         br = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
         systemProcess = processBuilder.start();
-        isThreadRunning.set(true);
+        running.set(true);
         LOGGER.info("execute command: {} at {}, pid is : {}", String.join(" ", commands),
                 currentWorkingDirectory, systemProcess.pid());
     }
 
     public void stop() throws IOException {
-        isThreadRunning.set(false);
+        running.set(false);
         if (systemProcess != null && systemProcess.isAlive()) {
             systemProcess.descendants().forEach(ProcessHandle::destroy);
             systemProcess.destroy();
