@@ -27,7 +27,7 @@ You can configure multiple processes together to form a tree structure, which I 
 
 ## How to use
 
-1. download app from this **[link](https://github.com/zcs19871221/local-development-console/actions/runs/12647816132/artifacts/2394422746)**.
+1. download app from this **[link](https://github.com/zcs19871221/local-development-console/actions/runs/12648257288/artifacts/2394538350)**.
 
 2. double click run.bat (currently only support windows if you need linux or mac
    version, please create issue or contact me). You can close this cmd console, the Console
