@@ -6,7 +6,7 @@ import {
 import { Tooltip, Button, message } from 'antd';
 import { useIntl } from 'react-intl';
 import { jsonFetcher } from '../common/fetcher.tsx';
-import { i18n } from '../i18n/index.tsx';
+import { i18n } from '../../i18n/index.tsx';
 import { processChainApiBase } from './types.ts';
 
 export default function ProcessChainOperators({

@@ -16,7 +16,7 @@ import { ColumnsType } from 'antd/es/table/InternalTable';
 import { bufferFetcher, jsonFetcher, useAppSwr } from '../common/fetcher.tsx';
 
 import { LogInfo, Process, processesApiBase } from './types.ts';
-import { i18n } from '../i18n/index.tsx';
+import { i18n } from '../../i18n/index.tsx';
 import { LogMonitorTable } from '../log_monitor/LogMonitorList.tsx';
 
 const operator = (type: 'start' | 'stop' | 'restart', processesId: number) =>

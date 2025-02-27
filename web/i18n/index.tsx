@@ -18,27 +18,9 @@ import {
   createIntl,
   createIntlCache,
   IntlCache,
-  MessageDescriptor,
-  FormattedMessage,
 } from 'react-intl';
-import type { Props } from 'react-intl/lib/src/components/message.d.ts';
 
 import type { AvailableLocales, LocalKey } from './types';
-
-type AppMessageDescriptor<IDS> = MessageDescriptor & { id?: IDS };
-type AppFormatMessageProps<IDS> = Props & { id?: IDS };
-
-type GenericMessageDescription<IDS, T = unknown> = T extends (
-  arg: unknown,
-) => unknown
-  ? Parameters<T> extends [MessageDescriptor, ...infer rest]
-    ? (...args: [AppMessageDescriptor<IDS>, ...rest]) => ReturnType<T>
-    : T
-  : T;
-
-export type AppIntlShape<IDS> = {
-  [K in keyof IntlShape]: GenericMessageDescription<IDS, IntlShape[K]>;
-};
 
 export interface LocaleContextValue {
   readonly locale: AvailableLocales;
@@ -46,7 +28,7 @@ export interface LocaleContextValue {
 }
 
 export async function importMessages(
-  locale: AvailableLocales,
+  locale: AvailableLocales
 ): Promise<Record<LocalKey, string>> {
   switch (locale) {
     case 'zh-cn':
@@ -79,7 +61,7 @@ class I18n {
     return this.currentLocale;
   }
 
-  public get intl(): AppIntlShape<LocalKey> {
+  public get intl(): IntlShape {
     return this.currentIntl;
   }
 
@@ -87,33 +69,28 @@ class I18n {
     return this.currentMessages;
   }
 
-  public async switch(locale: AvailableLocales) {
-    const messages = await importMessages(locale);
-
+  public update(locale: AvailableLocales, messages: Record<LocalKey, string>) {
     this.currentIntl = createIntl(
       {
         locale,
         messages,
       },
-      this.cache,
+      this.cache
     );
     this.currentLocale = locale;
     this.currentMessages = messages;
-    document.documentElement.lang = locale;
-
-    return messages;
   }
 
   private currentLocale: AvailableLocales | null = null;
 
   private cache: IntlCache = createIntlCache();
 
-  private currentIntl: AppIntlShape<LocalKey> = createIntl(
+  private currentIntl: IntlShape = createIntl(
     {
       locale: 'zh-cn',
       messages: {} as unknown as Record<LocalKey, string>,
     },
-    this.cache,
+    this.cache
   );
 
   private currentMessages: Record<LocalKey, string> | null = null;
@@ -135,8 +112,10 @@ export function LocaleProvider({
 
   useLayoutEffect(() => {
     async function fetchMessages() {
-      const fetchedMessages = await i18n.switch(locale);
+      const fetchedMessages = await importMessages(locale);
+      i18n.update(locale, fetchedMessages);
       setMessages(fetchedMessages);
+      document.documentElement.lang = locale;
     }
 
     fetchMessages();
@@ -147,7 +126,7 @@ export function LocaleProvider({
       locale,
       setLocale,
     }),
-    [locale],
+    [locale]
   );
 
   return (
@@ -162,7 +141,3 @@ export function LocaleProvider({
     </LocaleContext.Provider>
   );
 }
-
-export const AppFormattedMessage = FormattedMessage as React.ComponentType<
-  AppFormatMessageProps<LocalKey>
->;

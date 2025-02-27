@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "i18n": "i18n -t ./src -d ./src/i18n -m"
+    "i18n": "node ./i18n.js"
   },
   "prettier": {
     "singleQuote": true
@@ -47,6 +47,7 @@
     "@linaria/core": "^6.0.0",
     "@linaria/react": "^6.0.0",
     "antd": "^5.22.1",
+    "automatic-i18n": "^1.0.28",
     "classnames": "^2.5.1",
     "immer": "^10.0.3",
     "react": "^18.2.0",
@@ -67,7 +68,6 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "@wyw-in-js/babel-preset": "^0.2.2",
     "@wyw-in-js/vite": "^0.2.2",
-    "automatic-i18n": "^1.0.21",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.56.0",
     "eslint-config-airbnb": "^19.0.4",

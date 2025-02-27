@@ -24,7 +24,7 @@ import {
 } from './types.ts';
 import { Process, processesApiBase } from '../process/types.ts';
 import safeParse from '../common/safeParse.ts';
-import { i18n } from '../i18n/index.tsx';
+import { i18n } from '../../i18n/index.tsx';
 
 export default function ProcessChainDetail() {
   const intl = useIntl();
@@ -33,12 +33,12 @@ export default function ProcessChainDetail() {
   const initFormData = decodeURIComponent(params.get('data') ?? '');
   const [form] = Form.useForm<ProcessChainCreateOrUpdateRequest>();
   const { data, isLoading } = useAppSwr<ProcessChainResponse>(
-    processChainId ? `${processChainApiBase}/${processChainId}` : undefined
+    processChainId ? `${processChainApiBase}/${processChainId}` : undefined,
   );
 
   const navigate = useNavigate();
   const [selectedProcessId, setSelectedProcessId] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const { data: processes } = useAppSwr<Process[]>(processesApiBase);
   useLayoutEffect(() => {
@@ -55,7 +55,7 @@ export default function ProcessChainDetail() {
   const handleChildrenProcess: FormListProps['children'] = (
     fields,
     { add, remove },
-    { errors }
+    { errors },
   ) => (
     <div className="flex flex-col gap-3">
       {fields.map((field) => (
@@ -147,22 +147,22 @@ export default function ProcessChainDetail() {
         delete newValues.version;
 
         const copyAndDelIdAndVersion = (
-          processChainConfigs: typeof values.processChainConfigs
+          processChainConfigs: typeof values.processChainConfigs,
         ) =>
           processChainConfigs?.map((config) => {
             config = { ...config };
             delete config.id;
             delete config.version;
             config.childProcessChainConfigs = copyAndDelIdAndVersion(
-              config.childProcessChainConfigs
+              config.childProcessChainConfigs,
             );
             return config;
           });
         newValues.processChainConfigs = copyAndDelIdAndVersion(
-          newValues.processChainConfigs
+          newValues.processChainConfigs,
         );
         navigate(
-          `../new?data=${encodeURIComponent(JSON.stringify(newValues))}`
+          `../new?data=${encodeURIComponent(JSON.stringify(newValues))}`,
         );
       }}
       onSubmit={async () => {
@@ -177,7 +177,7 @@ export default function ProcessChainDetail() {
             intl.formatMessage({
               id: 'OperationSuccessful',
               defaultMessage: '操作成功',
-            })
+            }),
           );
           navigate('..');
         });
@@ -192,7 +192,7 @@ export default function ProcessChainDetail() {
                 id: 'key0032',
                 defaultMessage: '编辑服务链 - {v1}',
               },
-              { v1: data?.name ?? '' }
+              { v1: data?.name ?? '' },
             )
           : intl.formatMessage({
               id: 'key0033',
@@ -239,8 +239,8 @@ export default function ProcessChainDetail() {
                           intl.formatMessage({
                             id: 'key0011',
                             defaultMessage: '至少添加一个日志状态',
-                          })
-                        )
+                          }),
+                        ),
                       );
                     }
                     return Promise.resolve();

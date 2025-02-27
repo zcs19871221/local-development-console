@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { useIntl } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { ConfigProvider, Layout, Menu, message, Select, Alert } from 'antd';
 import { CloudServerOutlined } from '@ant-design/icons';
 import React, { Suspense, lazy } from 'react';
@@ -15,11 +15,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { jsonFetcher } from './common/fetcher.tsx';
-import {
-  AppFormattedMessage,
-  LocaleProvider,
-  useLocale,
-} from './i18n/index.tsx';
+import { LocaleProvider, useLocale } from '../i18n/index.tsx';
 import LogMonitor from './log_monitor/index.tsx';
 import ProcessChain from './process_chain/index.tsx';
 
@@ -71,7 +67,7 @@ export const App = () => {
         <Layout className="h-full ">
           <Header className="text-white flex items-center">
             <div>
-              <AppFormattedMessage
+              <FormattedMessage
                 id="FrontendManagementSystem"
                 defaultMessage={intl.formatMessage({
                   id: 'FrontendManagementSystem',
@@ -87,7 +83,7 @@ export const App = () => {
                 });
               }}
             >
-              <AppFormattedMessage
+              <FormattedMessage
                 id="ShutdownSystem"
                 defaultMessage={intl.formatMessage({
                   id: 'ShutdownSystem',
@@ -96,16 +92,10 @@ export const App = () => {
               />
             </div>
             <Select onChange={setLocale} value={locale} className="ml-5 w-28">
+              {/* auto-i18n-ignore-start */}
               <Option value="en-us">English</Option>
-              <Option value="zh-cn">
-                <AppFormattedMessage
-                  id="Chinese"
-                  defaultMessage={intl.formatMessage({
-                    id: 'Chinese',
-                    defaultMessage: '中文',
-                  })}
-                />
-              </Option>
+              <Option value="zh-cn">中文</Option>
+              {/* auto-i18n-ignore-end */}
             </Select>
           </Header>
           <Layout>
@@ -174,5 +164,5 @@ createRoot(document.getElementById('root')!).render(
         </LocaleProvider>
       </BrowserRouter>
     </ErrorBoundary>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

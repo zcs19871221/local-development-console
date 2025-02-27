@@ -14,7 +14,7 @@ import { logMonitorBaseUrl, LogMonitor, LogStatus } from './types.ts';
 
 import MainWrapper from '../common/MainWrapper.tsx';
 import useGetAntdTbodyHeight from '../common/useGetAntdTbodyHeight.ts';
-import { i18n } from '../i18n/index.tsx';
+import { i18n } from '../../i18n/index.tsx';
 
 export const logStatusColumn = () => [
   {
@@ -133,13 +133,13 @@ export const LogMonitorTable = ({
                         onOk() {
                           jsonFetcher(
                             `${logMonitorBaseUrl}/${row.id}`,
-                            'DELETE'
+                            'DELETE',
                           ).then(() => {
                             message.success(
                               intl.formatMessage({
                                 id: 'DeletedSuccessfully',
                                 defaultMessage: '删除成功',
-                              })
+                              }),
                             );
                             mutate?.();
                           });

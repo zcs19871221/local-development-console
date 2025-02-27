@@ -31,7 +31,7 @@ import {
   processesApiBase,
   ProcessesCreatedOrUpdated,
 } from './types.ts';
-import { AppFormattedMessage, i18n } from '../i18n/index.tsx';
+import { i18n } from '../../i18n/index.tsx';
 import useDebouncedValue from '../common/useDebouncedValue.tsx';
 import safeParse from '../common/safeParse.ts';
 import { LogMonitor, logMonitorBaseUrl } from '../log_monitor/types.ts';
@@ -57,13 +57,13 @@ export default function ProcessesComponent() {
     path
       ? `${base}/system/read?path=${encodeURIComponent(`${path}/package.json`)}`
       : undefined,
-    bufferFetcher
+    bufferFetcher,
   );
 
   const { data: logMonitors } = useAppSwr<LogMonitor[]>(logMonitorBaseUrl);
 
   const { data: paths } = useAppSwr<string[]>(
-    `${processesApiBase}/distinctProcessPaths`
+    `${processesApiBase}/distinctProcessPaths`,
   );
 
   const isCopyingRef = useRef(false);
@@ -72,7 +72,7 @@ export default function ProcessesComponent() {
     <MainWrapper>
       <div className="flex justify-center items-center h-8">
         <h2 className="mr-auto">
-          <AppFormattedMessage
+          <FormattedMessage
             id="ServiceManagement"
             defaultMessage={intl.formatMessage({
               id: 'ServiceManagement',
@@ -126,13 +126,13 @@ export default function ProcessesComponent() {
                       onOk() {
                         jsonFetcher(
                           `${processesApiBase}/${processesRecord.id}`,
-                          'DELETE'
+                          'DELETE',
                         ).then(() => {
                           message.success(
                             i18n.intl.formatMessage({
                               id: 'DeletedSuccessfully',
                               defaultMessage: '删除成功',
-                            })
+                            }),
                           );
                           refreshProcesses();
                         });
@@ -219,13 +219,13 @@ export default function ProcessesComponent() {
                 {
                   ...values,
                   id,
-                }
+                },
               ).then(() => {
                 message.success(
                   intl.formatMessage({
                     id: 'OperationSuccessful',
                     defaultMessage: '操作成功',
-                  })
+                  }),
                 );
                 refreshProcesses();
                 setShowProcessesForm(false);
@@ -289,7 +289,7 @@ export default function ProcessesComponent() {
                       });
                       return commands;
                     },
-                    [] as DefaultOptionType[]
+                    [] as DefaultOptionType[],
                   )
                 : []
             }
